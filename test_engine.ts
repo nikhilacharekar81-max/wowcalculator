@@ -74,7 +74,7 @@ console.log('--- 1. INCOME TAX CALCULATOR (5 Test Cases) ---');
 
   // FICA: 6.2% SS + 1.45% Med = 7.65% on $95,000 (401k is subject to FICA) = $7,267.50
   assert(res.ficaTax === 7267.50, 'Case 1.1: FICA Tax on $95,000 gross is $7,267.50', `Got ${res.ficaTax}`);
-  assert(res.monthlyFicaTax === 605.63, 'Case 1.1: Monthly FICA is $605.63/mo', `Got ${res.monthlyFicaTax}`);
+  assert(res.monthly.ficaTax === 605.63, 'Case 1.1: Monthly FICA is $605.63/mo', `Got ${res.monthly.ficaTax}`);
 
   // CA State Taxable = 95,000 - 6,000 - 5,900 (CA Single std ded) = $83,100
   // CA State Tax = $4,270.66

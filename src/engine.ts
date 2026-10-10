@@ -328,7 +328,7 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
   // Federal Taxable Income = Gross - Pre-Tax Contributions - Federal Deduction
   const federalTaxableIncome = Math.max(0, grossSalary - totalPreTax - effectiveFederalDeduction);
 
-  // 2. Federal Income Tax using Brackets
+  // 2. Federal Income Tax using 2026 IRS Withholding Method (Brackets)
   const federalBrackets = yearConfig.brackets[filingStatus].value;
   let federalTax = 0;
   let rem = federalTaxableIncome;
@@ -356,11 +356,28 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
 
   if (stateConfig.hasIncomeTax) {
     stateDeduction = stateConfig.standardDeduction[filingStatus] || 0;
-    // Pre-tax 401(k) reduces State AGI across all states
-    // Note: CA and NJ do not allow state HSA deduction on health savings accounts
-    const statePreTaxExempt = (stateCode === 'CA' || stateCode === 'NJ') 
-      ? preTax401k 
-      : (preTax401k + preTaxHsaFsa);
+    // 401(k) and HSA/FSA contributions are treated differently by some states.
+    // PA: 401k/403b/457 contributions are taxable compensation for state income tax purposes.
+    // CA: HSA contributions are taxable compensation.
+    // NJ: HSA, Health FSA, and Dependent-Care FSA contributions are taxable compensation.
+    
+    let stateExempt401k = preTax401k;
+    let stateExemptHsaFsa = preTaxHsaFsa;
+
+    if (stateCode === 'PA') {
+      stateExempt401k = 0; // PA does not conform to federal 401k/403b/457
+    }
+    
+    if (stateCode === 'CA') {
+      stateExemptHsaFsa = 0; // CA does not allow pre-tax HSA
+    }
+    
+    if (stateCode === 'NJ') {
+      stateExemptHsaFsa = 0; // NJ does not allow pre-tax HSA, Health FSA, or Dependent-Care FSA
+    }
+
+
+    const statePreTaxExempt = stateExempt401k + stateExemptHsaFsa;
 
     stateTaxableIncome = Math.max(0, grossSalary - statePreTaxExempt - stateDeduction);
 
@@ -383,7 +400,6 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
   }
 
   // 5. Total Taxes & Liquid Take-Home Pay
-  // RULE: Net Take-Home Pay = Gross Salary - Total Taxes - Pre-Tax Contributions
   const totalTax = roundToCents(federalTax + ficaTax + stateTax);
   const netTakeHome = Math.max(0, roundToCents(grossSalary - totalTax - totalPreTax));
 
@@ -409,15 +425,40 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     totalTax,
     totalEffectiveTaxRate: grossSalary > 0 ? (totalTax / grossSalary) * 100 : 0,
     netTakeHome,
-    monthlyGross: roundToCents(grossSalary / 12),
-    monthlyFederalTax: roundToCents(federalTax / 12),
-    monthlyFicaTax: roundToCents(ficaTax / 12),
-    monthlyStateTax: roundToCents(stateTax / 12),
-    monthlyTotalTax: roundToCents(totalTax / 12),
-    monthlyPreTax: roundToCents(totalPreTax / 12),
-    monthlyNetTakeHome: roundToCents(netTakeHome / 12),
-    biweeklyNetTakeHome: roundToCents(netTakeHome / 26),
-    weeklyNetTakeHome: roundToCents(netTakeHome / 52),
+    // Clearly labeled Annual vs Paycheck/Period estimates
+    annual: {
+      gross: grossSalary,
+      totalTax,
+      netTakeHome,
+      preTax: totalPreTax
+    },
+    monthly: {
+      gross: roundToCents(grossSalary / 12),
+      federalTax: roundToCents(federalTax / 12),
+      ficaTax: roundToCents(ficaTax / 12),
+      stateTax: roundToCents(stateTax / 12),
+      totalTax: roundToCents(totalTax / 12),
+      preTax: roundToCents(totalPreTax / 12),
+      netTakeHome: roundToCents(netTakeHome / 12)
+    },
+    biweekly: {
+      gross: roundToCents(grossSalary / 26),
+      federalTax: roundToCents(federalTax / 26),
+      ficaTax: roundToCents(ficaTax / 26),
+      stateTax: roundToCents(stateTax / 26),
+      totalTax: roundToCents(totalTax / 26),
+      preTax: roundToCents(totalPreTax / 26),
+      netTakeHome: roundToCents(netTakeHome / 26)
+    },
+    weekly: {
+      gross: roundToCents(grossSalary / 52),
+      federalTax: roundToCents(federalTax / 52),
+      ficaTax: roundToCents(ficaTax / 52),
+      stateTax: roundToCents(stateTax / 52),
+      totalTax: roundToCents(totalTax / 52),
+      preTax: roundToCents(totalPreTax / 52),
+      netTakeHome: roundToCents(netTakeHome / 52)
+    },
     warnings,
     isEstimated: Boolean(stateConfig.isEstimated || yearConfig.standardDeduction.single.needsVerification),
     statutorySources: {
