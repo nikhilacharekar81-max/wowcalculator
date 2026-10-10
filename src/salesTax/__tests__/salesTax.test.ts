@@ -171,7 +171,7 @@ export function runSalesTaxTests() {
     stateCode: 'IL'
   });
 
-  assert(incomeResBefore.netIncome === incomeResAfter.netIncome, 'Case 7.2: Sales tax calculation does not contaminate income tax outputs');
+  assert(incomeResBefore.netTakeHome === incomeResAfter.netTakeHome, 'Case 7.2: Sales tax calculation does not contaminate income tax outputs');
 
   // Test 8: All 51 jurisdictions have configs
   const allConfigs = getAllStateSalesTaxConfigs(2026);
@@ -189,11 +189,100 @@ export function runSalesTaxTests() {
       stateCode: 'ZZ' // Unrecognized
     });
   } catch (e: any) {
-    if (e.message.includes('not supported')) {
+    if (e.message.includes('not supported') || e.message.includes('Invalid state code')) {
       errorCaught9 = true;
     }
   }
   assert(errorCaught9, 'Case 9.1: Unrecognized state code throws explicit error');
+
+  // Test 10: Verification status consistency across all 51 jurisdictions
+  for (const cfg of allConfigs) {
+    const res = calculateSalesTax({
+      amount: 100,
+      mode: 'add_tax',
+      stateCode: cfg.code,
+      taxYear: 2026
+    });
+    assert(
+      !(res.verificationStatus === 'VERIFIED' && cfg.evidence?.verificationStatus !== 'VERIFIED'),
+      `Case 10.1: ${cfg.code} does not report VERIFIED when evidence is ${cfg.evidence?.verificationStatus}`
+    );
+  }
+
+  // Test 11: Origin-based vs Destination-based sourcing rules
+  const txRes = calculateSalesTax({ amount: 100, mode: 'add_tax', stateCode: 'TX', taxYear: 2026 });
+  const paRes = calculateSalesTax({ amount: 100, mode: 'add_tax', stateCode: 'PA', taxYear: 2026 });
+  const vaRes = calculateSalesTax({ amount: 100, mode: 'add_tax', stateCode: 'VA', taxYear: 2026 });
+  const caRes = calculateSalesTax({ amount: 100, mode: 'add_tax', stateCode: 'CA', taxYear: 2026 });
+  const nyRes = calculateSalesTax({ amount: 100, mode: 'add_tax', stateCode: 'NY', taxYear: 2026 });
+  assert(txRes.sourcingRule === 'origin', 'Case 11.1: TX is origin-based sourcing');
+  assert(paRes.sourcingRule === 'origin', 'Case 11.2: PA is origin-based sourcing');
+  assert(vaRes.sourcingRule === 'origin', 'Case 11.3: VA is origin-based sourcing');
+  assert(caRes.sourcingRule === 'destination', 'Case 11.4: CA is destination-based sourcing');
+  assert(nyRes.sourcingRule === 'destination', 'Case 11.5: NY is destination-based sourcing');
+
+  // Test 12: Zero sales tax states handling
+  const orCfg = getStateSalesTaxConfig('OR');
+  const nhCfg = getStateSalesTaxConfig('NH');
+  const mtCfg = getStateSalesTaxConfig('MT');
+  const deCfg = getStateSalesTaxConfig('DE');
+  const akCfg = getStateSalesTaxConfig('AK');
+  assert(orCfg.stateRate === 0 && orCfg.avgLocalRate === 0, 'Case 12.1: Oregon has 0% state and 0% local sales tax');
+  assert(nhCfg.stateRate === 0 && nhCfg.avgLocalRate === 0, 'Case 12.2: New Hampshire has 0% state and 0% local sales tax');
+  assert(mtCfg.stateRate === 0 && mtCfg.avgLocalRate === 0, 'Case 12.3: Montana has 0% state and 0% local sales tax');
+  assert(deCfg.stateRate === 0 && deCfg.avgLocalRate === 0, 'Case 12.4: Delaware has 0% state and 0% local sales tax');
+  assert(akCfg.stateRate === 0 && akCfg.avgLocalRate > 0, 'Case 12.5: Alaska has 0% state tax with positive local option taxes');
+
+  // Test 13: Zero-income-tax states cross-calculator consistency
+  const zeroIncomeStates = ['TX', 'FL', 'NV', 'WA', 'WY', 'SD', 'AK', 'TN', 'NH'];
+  for (const st of zeroIncomeStates) {
+    const incRes = calculateComprehensiveTax({
+      annualIncome: 120000,
+      year: 2026,
+      filingStatus: 'single',
+      stateCode: st
+    });
+    assert(incRes.stateTax === 0, `Case 13.1: ${st} returns $0.00 state income tax`);
+    const stSalesCfg = getStateSalesTaxConfig(st);
+    assert(stSalesCfg !== undefined && typeof stSalesCfg.stateRate === 'number', `Case 13.2: ${st} maps to valid sales tax config`);
+  }
+
+  // Test 14: Complete calculation audit trail populated without placeholders
+  const auditRes = calculateSalesTax({
+    amount: 250,
+    mode: 'add_tax',
+    stateCode: 'CA',
+    taxYear: 2026,
+    discountPercent: 15,
+    discountType: 'store',
+    shippingAmount: 20
+  });
+  const trail = auditRes.auditTrail;
+  assert(!!trail.determinationId && trail.determinationId.startsWith('DET-'), 'Case 14.1: Determination ID present');
+  assert(trail.transactionDate === '2026-01-01', 'Case 14.2: Transaction date recorded');
+  assert(trail.taxYear === 2026, 'Case 14.3: Tax year recorded as 2026');
+  assert(trail.taxabilityDecisions.length >= 3, 'Case 14.4: Taxability decisions populated for item, discount, and shipping');
+  assert(trail.taxabilityDecisions.every(d => !d.note.includes('TODO') && !d.note.includes('placeholder')), 'Case 14.5: Taxability decisions contain no placeholders');
+  assert(trail.appliedRates.length >= 2, 'Case 14.6: Applied rates populated with state and local components');
+  assert(trail.appliedRates.some(r => r.component === 'local' && r.isEstimate === true), 'Case 14.7: Average local rate clearly flagged as estimate');
+  assert(!trail.roundingLog.includes('TODO') && trail.roundingLog.length > 20, 'Case 14.8: Detailed rounding log present');
+
+  // Test 15: Transaction date year validation strictly limited to 2026
+  let historicalDateError = false;
+  try {
+    calculateSalesTax({
+      amount: 100,
+      mode: 'add_tax',
+      stateCode: 'CA',
+      taxYear: 2026,
+      transactionDate: '2025-06-15'
+    });
+  } catch (e: any) {
+    if (e.message.includes('2026')) {
+      historicalDateError = true;
+    }
+  }
+  assert(historicalDateError, 'Case 15.1: Non-2026 transaction dates rejected by sales tax engine');
 
   console.log('--- ALL SALES TAX TESTS PASSED SUCCESSFULLY ---');
 }

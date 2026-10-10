@@ -30,6 +30,7 @@ import {
   type YearTaxConfig,
   type AutoStateTaxConfig
 } from './usFinancialConfig';
+import { calculateSalesTax as calculateSalesTaxEngine } from './salesTax/engine';
 
 export * from './usFinancialConfig';
 
@@ -288,6 +289,10 @@ export interface ComprehensiveTaxInput {
   preTaxHsaFsa?: number;
   itemizedDeductions?: number;
   deductionMode?: 'standard' | 'itemized';
+  isSenior?: boolean;
+  tipIncome?: number;
+  overtimeIncome?: number;
+  saltPaid?: number;
 }
 
 export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
@@ -316,17 +321,28 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
   const preTaxHsaFsa = Math.max(0, input.preTaxHsaFsa || 0);
   const totalPreTax = preTax401k + preTaxHsaFsa;
 
+  // New 2026 Provisions
+  const saltCap = yearConfig.taxProvisions?.saltCap?.value || 40000;
+  const saltDeduction = Math.min(input.saltPaid || 0, saltCap);
+  
+  const tipOvertimeLimit = yearConfig.taxProvisions?.tipOvertimeDeductionLimit?.value || 25000;
+  const tipOvertimeDeduction = Math.min((input.tipIncome || 0) + (input.overtimeIncome || 0), tipOvertimeLimit);
+  
+  const seniorDeduction = input.isSenior && yearConfig.taxProvisions
+    ? (yearConfig.taxProvisions.seniorEnhancementDeduction[filingStatus]?.value || 0)
+    : 0;
+
   // 1. Federal Standard vs Itemized Deduction
   const standardDeduction = yearConfig.standardDeduction[filingStatus].value;
   // If deductionMode === 'itemized', use exactly itemizedDeductions (even if below standard)
   const effectiveFederalDeduction = input.deductionMode === 'itemized'
-    ? Math.max(0, input.itemizedDeductions || 0)
+    ? Math.max(0, (input.itemizedDeductions || 0) + saltDeduction)
     : (input.itemizedDeductions !== undefined && input.itemizedDeductions > standardDeduction
-        ? input.itemizedDeductions
+        ? input.itemizedDeductions + saltDeduction
         : standardDeduction);
 
-  // Federal Taxable Income = Gross - Pre-Tax Contributions - Federal Deduction
-  const federalTaxableIncome = Math.max(0, grossSalary - totalPreTax - effectiveFederalDeduction);
+  // Federal Taxable Income = Gross - Pre-Tax Contributions - Federal Deduction - Senior/Tip/Overtime Deductions
+  const federalTaxableIncome = Math.max(0, grossSalary - totalPreTax - effectiveFederalDeduction - seniorDeduction - tipOvertimeDeduction);
 
   // 2. Federal Income Tax using 2026 IRS Withholding Method (Brackets)
   const federalBrackets = yearConfig.brackets[filingStatus].value;
@@ -1361,125 +1377,21 @@ export interface SalesTaxInput {
 export function calculateSalesTax(input: {
   amount: number;
   mode: 'add_tax' | 'extract_tax';
-  stateRate: number;
-  localRate: number;
+  stateRate?: number;
+  localRate?: number;
   discountPercent?: number;
   discountType?: DiscountType;
   itemType?: TaxableItemType;
   stateCode?: string;
+  shippingAmount?: number;
+  taxYear?: number;
+  transactionDate?: string;
 }) {
-  const discountPct = Math.max(0, Math.min(100, input.discountPercent || 0));
-  const discountRate = discountPct / 100;
-  const discountType = input.discountType || 'store';
-  const itemType = input.itemType || 'general';
-  const stateCode = (input.stateCode || 'CA').toUpperCase();
-
-  const stateR = Math.max(0, input.stateRate) / 100;
-  const localR = Math.max(0, input.localRate) / 100;
-
-  let exemptionNote = '';
-  let effectiveMultiplier = 1.0;
-
-  if (itemType === 'prescription') {
-    effectiveMultiplier = 0;
-    exemptionNote = 'Prescription drugs are exempt from sales tax in nearly all US states.';
-  } else if (itemType === 'groceries') {
-    const exemptStates = ['CA', 'TX', 'NY', 'MA', 'FL', 'PA', 'OH', 'MI', 'NJ', 'VA', 'MD', 'CT', 'CO'];
-    if (exemptStates.includes(stateCode)) {
-      effectiveMultiplier = 0;
-      exemptionNote = `${stateCode} exempts unprepared grocery food from sales tax.`;
-    } else {
-      exemptionNote = `${stateCode} taxes grocery food (exemption status varies by state/jurisdiction).`;
-    }
-  } else if (itemType === 'clothing') {
-    if (stateCode === 'NY' && input.amount <= 110) {
-      effectiveMultiplier = 0;
-      exemptionNote = 'New York exempts clothing and footwear items priced under $110.';
-    } else if (stateCode === 'MA' && input.amount <= 175) {
-      effectiveMultiplier = 0;
-      exemptionNote = 'Massachusetts exempts clothing items priced under $175.';
-    } else if (['PA', 'NJ', 'MN'].includes(stateCode)) {
-      effectiveMultiplier = 0;
-      exemptionNote = `${stateCode} generally exempts most clothing apparel from sales tax.`;
-    } else {
-      exemptionNote = `Clothing is taxable at standard rates in ${stateCode} (threshold exemptions may apply).`;
-    }
-  } else {
-    exemptionNote = `General merchandise / prepared meals are fully taxable in ${stateCode}.`;
-  }
-
-  const effectiveStateR = stateR * effectiveMultiplier;
-  const effectiveLocalR = localR * effectiveMultiplier;
-  const totalR = effectiveStateR + effectiveLocalR;
-
-  if (input.mode === 'add_tax') {
-    const raw = Math.max(0, input.amount);
-    let taxableBase = raw;
-    let savings = 0;
-
-    if (discountType === 'store') {
-      const discountedRaw = raw * (1 - discountRate);
-      taxableBase = roundToCents(discountedRaw);
-      savings = roundToCents(raw * discountRate);
-    } else {
-      savings = roundToCents(raw * discountRate);
-      taxableBase = roundToCents(raw);
-    }
-
-    // Sales tax computed per jurisdiction: round state and local separately to cents, then sum
-    const stateTax = roundToCents(taxableBase * effectiveStateR);
-    const localTax = roundToCents(taxableBase * effectiveLocalR);
-    const totalTax = roundToCents(stateTax + localTax);
-    const finalTotal = roundToCents(taxableBase + totalTax);
-
-    return {
-      beforeTax: taxableBase,
-      rawAmount: raw,
-      stateTax,
-      localTax,
-      totalTax,
-      finalTotal,
-      savings,
-      centAdjustment: 0,
-      exemptionNote,
-      itemType,
-      stateCode
-    };
-  } else {
-    // Reverse tax extraction mode
-    const total = Math.max(0, input.amount);
-    const beforeTaxRaw = total / (1 + totalR);
-    let beforeTax = roundToCents(beforeTaxRaw);
-    let stateTax = roundToCents(beforeTax * effectiveStateR);
-    let localTax = roundToCents(beforeTax * effectiveLocalR);
-    let totalTax = roundToCents(stateTax + localTax);
-    let calculatedTotal = roundToCents(beforeTax + totalTax);
-    let centAdjustment = roundToCents(total - calculatedTotal);
-
-    if (centAdjustment !== 0) {
-      beforeTax = roundToCents(beforeTax + centAdjustment);
-      calculatedTotal = roundToCents(beforeTax + totalTax);
-      centAdjustment = roundToCents(total - calculatedTotal);
-      if (centAdjustment !== 0) {
-        stateTax = roundToCents(stateTax + centAdjustment);
-      }
-      totalTax = roundToCents(stateTax + localTax);
-    }
-
-    return {
-      beforeTax,
-      rawAmount: total,
-      stateTax,
-      localTax,
-      totalTax,
-      finalTotal: total,
-      savings: 0,
-      centAdjustment,
-      exemptionNote,
-      itemType,
-      stateCode
-    };
-  }
+  return calculateSalesTaxEngine({
+    ...input,
+    stateCode: input.stateCode || 'CA',
+    taxYear: input.taxYear !== undefined ? input.taxYear : 2026
+  });
 }
 
 export function calculateFinanceTVM(input: {

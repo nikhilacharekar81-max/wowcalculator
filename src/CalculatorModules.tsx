@@ -47,6 +47,7 @@ import {
   addMonthsToDateStr
 } from './engine';
 import { calculateSalesTax as calculateSalesTaxRobust } from './salesTax/engine';
+import { getStateSalesTaxConfig } from './salesTax/config';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -756,8 +757,16 @@ export function LoanCalculatorModule({ currency }: { currency: any }) {
  * 2. AUTO LOAN CALCULATOR MODULE
  * ========================================================================== */
 
-export function AutoLoanModule({ currency }: { currency: any }) {
-  const [stateCode, setStateCode] = useState('CA');
+export function AutoLoanModule({ 
+  currency, 
+  selectedState, 
+  onStateChange 
+}: { 
+  currency: any; 
+  selectedState?: string; 
+  onStateChange?: (state: string) => void; 
+}) {
+  const [stateCode, setStateCode] = useState(selectedState || 'CA');
   const [tradeInReducesTaxOverride, setTradeInReducesTaxOverride] = useState<boolean | null>(null);
   const [params, setParams] = useState({
     vehiclePrice: 38000,
@@ -782,7 +791,7 @@ export function AutoLoanModule({ currency }: { currency: any }) {
   }, [stateCode]);
 
   // Sync state baseline sales tax when state changes
-  const handleStateChange = (newCode: string) => {
+  const handleStateChange = (newCode: string, notifyParent: boolean = true) => {
     setStateCode(newCode);
     setTradeInReducesTaxOverride(null); // Reset manual override to follow selected state's statutory rule
     if (newCode === 'CUSTOM') return;
@@ -790,7 +799,16 @@ export function AutoLoanModule({ currency }: { currency: any }) {
     if (item) {
       setParams(p => ({ ...p, salesTaxPercent: item.rate }));
     }
+    if (notifyParent) {
+      onStateChange?.(newCode);
+    }
   };
+
+  useEffect(() => {
+    if (selectedState && selectedState !== stateCode) {
+      handleStateChange(selectedState, false);
+    }
+  }, [selectedState]);
 
   // Statutory determination for whether trade-in reduces taxable amount
   const stateStatutoryTradeInCredit = selectedStateConfig ? selectedStateConfig.tradeInTaxCredit === true : true;
@@ -2854,7 +2872,15 @@ export const US_RETIREMENT_STATE_TAX_LIST = [
   { state: 'Wyoming', treatment: 'No State Income Tax', rate: '0.00%', protections: 'Zero state tax on all retirement withdrawals' }
 ];
 
-export function RetirementModule({ currency }: { currency: any }) {
+export function RetirementModule({ 
+  currency, 
+  selectedState, 
+  onStateChange 
+}: { 
+  currency: any; 
+  selectedState?: string; 
+  onStateChange?: (state: string) => void; 
+}) {
   const [params, setParams] = useState({ 
     age: 30, 
     savings: 50000, 
@@ -2871,9 +2897,15 @@ export function RetirementModule({ currency }: { currency: any }) {
     useBracketTaxes: false,
     retirementTaxRate: 15,
     filingStatus: 'single' as 'single' | 'mfj' | 'mfs' | 'hoh',
-    stateCode: 'CA',
+    stateCode: selectedState || 'CA',
     capitalGainsTaxDrag: 0.5
   });
+
+  useEffect(() => {
+    if (selectedState && selectedState !== params.stateCode) {
+      setParams(p => ({ ...p, stateCode: selectedState }));
+    }
+  }, [selectedState]);
 
   const res = useMemo(() => calculateRetirement({ 
     currentAge: params.age, 
@@ -3008,10 +3040,13 @@ export function RetirementModule({ currency }: { currency: any }) {
                         <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">State</label>
                         <select 
                           value={params.stateCode} 
-                          onChange={e => setParams({...params, stateCode: e.target.value})}
+                          onChange={e => {
+                            setParams({...params, stateCode: e.target.value});
+                            onStateChange?.(e.target.value);
+                          }}
                           className="w-full px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-900 dark:text-white"
                         >
-                          {['CA', 'TX', 'NY', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI', 'NJ', 'WA', 'AZ', 'MA', 'TN', 'IN', 'CO', 'MN'].map(s => <option key={s} value={s}>{s}</option>)}
+                          {US_STATE_LIST.map(st => <option key={st.code} value={st.code}>{st.code}</option>)}
                         </select>
                       </div>
                     </div>
@@ -3917,7 +3952,15 @@ export function FinanceTVMModule({ currency }: { currency: any }) {
 /* ============================================================================
  * 8. INCOME TAX CALCULATOR MODULE (US JURISDICTION ONLY)
  * ========================================================================== */
-export function IncomeTaxModule({ currency }: { currency: any }) {
+export function IncomeTaxModule({ 
+  currency, 
+  selectedState, 
+  onStateChange 
+}: { 
+  currency: any; 
+  selectedState?: string; 
+  onStateChange?: (state: string) => void; 
+}) {
   const [year, setYear] = useState<number>(DEFAULT_TAX_YEAR);
   const [unsupportedYearError, setUnsupportedYearError] = useState<string | null>(null);
 
@@ -3939,7 +3982,13 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
   }, []);
 
   const [filingStatus, setFilingStatus] = useState<FilingStatus>('single');
-  const [stateCode, setStateCode] = useState<string>('CA');
+  const [stateCode, setStateCode] = useState<string>(selectedState || 'CA');
+
+  useEffect(() => {
+    if (selectedState && selectedState !== stateCode) {
+      setStateCode(selectedState);
+    }
+  }, [selectedState]);
   const [annualIncome, setAnnualIncome] = useState<number>(95000);
   const [age, setAge] = useState<number>(35);
   const [hsaCoverage, setHsaCoverage] = useState<'single' | 'family'>('single');
@@ -3994,9 +4043,10 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
       preTax401k: capped401k,
       preTaxHsaFsa: cappedHsaFsa,
       itemizedDeductions: deductionMode === 'itemized' ? itemizedAmount : undefined,
-      deductionMode
+      deductionMode,
+      isSenior: age >= 65
     });
-  }, [annualIncome, year, filingStatus, stateCode, capped401k, cappedHsaFsa, deductionMode, itemizedAmount]);
+  }, [annualIncome, year, filingStatus, stateCode, capped401k, cappedHsaFsa, deductionMode, itemizedAmount, age]);
 
   const format = (v: number) => `$${new Intl.NumberFormat().format(Math.round(v))}`;
   const formatDetailed = (v: number) => `$${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}`;
@@ -4129,7 +4179,10 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
             <select
               id="tax-state-select"
               value={stateCode}
-              onChange={(e) => setStateCode(e.target.value)}
+              onChange={(e) => {
+                setStateCode(e.target.value);
+                onStateChange?.(e.target.value);
+              }}
               className="w-full min-h-[44px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl px-4 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {US_STATE_LIST.map(st => (
@@ -4268,7 +4321,7 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
           <MetricCard 
             label="Net Annual Take-Home" 
             value={formatDetailed(taxResult.netTakeHome)} 
-            subtext={`${formatDetailed(taxResult.monthlyNetTakeHome)}/mo (${formatDetailed(taxResult.biweeklyNetTakeHome)} bi-weekly)`} 
+            subtext={`${formatDetailed(taxResult.monthly.netTakeHome)}/mo (${formatDetailed(taxResult.biweekly.netTakeHome)} bi-weekly)`} 
             icon={Wallet} 
             color="bg-emerald-600" 
           />
@@ -4321,11 +4374,11 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
             <div className="space-y-2.5 text-xs sm:text-sm pt-2">
               <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-700">
                 <span className="text-slate-700 dark:text-slate-300 font-medium">Gross Salary (Monthly)</span>
-                <span className="font-bold text-slate-900 dark:text-white font-mono">{formatDetailed(taxResult.monthlyGross)}</span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">{formatDetailed(taxResult.monthly.gross)}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-700">
                 <span className="text-slate-700 dark:text-slate-300 font-medium">Federal Withholding</span>
-                <span className="font-bold text-rose-600 dark:text-rose-400 font-mono">-{formatDetailed(taxResult.monthlyFederalTax)}</span>
+                <span className="font-bold text-rose-600 dark:text-rose-400 font-mono">-{formatDetailed(taxResult.monthly.federalTax)}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-700">
                 <span className="text-slate-700 dark:text-slate-300 font-medium">
@@ -4344,7 +4397,7 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
                   {taxResult.stateName} Income Tax
                 </span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">
-                  {taxResult.monthlyStateTax > 0 ? `-${formatDetailed(taxResult.monthlyStateTax)}` : '$0.00'}
+                  {taxResult.monthly.stateTax > 0 ? `-${formatDetailed(taxResult.monthly.stateTax)}` : '$0.00'}
                 </span>
               </div>
               {capped401k > 0 && (
@@ -4361,7 +4414,7 @@ export function IncomeTaxModule({ currency }: { currency: any }) {
               )}
               <div className="flex justify-between py-2.5 border-t-2 border-slate-300 dark:border-slate-600">
                 <span className="font-black text-slate-900 dark:text-white">Net Liquid Paycheck</span>
-                <span className="font-black text-emerald-600 dark:text-emerald-400 font-mono text-base">{formatDetailed(taxResult.monthlyNetTakeHome)}</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 font-mono text-base">{formatDetailed(taxResult.monthly.netTakeHome)}</span>
               </div>
             </div>
           </GlassCard>
@@ -4521,7 +4574,15 @@ export function CompoundInterestModule({ currency }: { currency: any }) {
 /* ============================================================================
  * 10. SALARY CALCULATOR MODULE
  * ========================================================================== */
-export function SalaryModule({ currency }: { currency: any }) {
+export function SalaryModule({ 
+  currency,
+  selectedState,
+  onStateChange
+}: { 
+  currency: any;
+  selectedState?: string;
+  onStateChange?: (state: string) => void;
+}) {
   const [params, setParams] = useState({
     amount: 75000,
     frequency: 'annual' as 'hourly' | 'daily' | 'weekly' | 'biweekly' | 'semimonthly' | 'monthly' | 'annual',
@@ -4535,7 +4596,7 @@ export function SalaryModule({ currency }: { currency: any }) {
     // Real Statutory Tax Engine Parameters
     year: DEFAULT_TAX_YEAR,
     filingStatus: 'single' as FilingStatus,
-    stateCode: 'CA',
+    stateCode: selectedState || 'CA',
     preTax401k: 0,
     preTaxHsaFsa: 0,
 
@@ -4547,6 +4608,12 @@ export function SalaryModule({ currency }: { currency: any }) {
     applyCaliforniaDailyOvertime: false,
     dailyHours: [8, 8, 8, 8, 8, 0, 0] as number[]
   });
+
+  useEffect(() => {
+    if (selectedState && selectedState !== params.stateCode) {
+      setParams(p => ({ ...p, stateCode: selectedState }));
+    }
+  }, [selectedState]);
 
   const [unsupportedYearError, setUnsupportedYearError] = useState<string | null>(null);
 
@@ -4830,7 +4897,11 @@ export function SalaryModule({ currency }: { currency: any }) {
                   <select
                     id="salary-state-select"
                     value={params.stateCode}
-                    onChange={e => setParams({ ...params, stateCode: e.target.value })}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setParams({ ...params, stateCode: val });
+                      onStateChange?.(val);
+                    }}
                     className="w-full min-h-[44px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-2xl py-3 px-3 text-xs font-bold text-slate-900 dark:text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
                     {US_STATE_LIST.map(st => (
@@ -5117,17 +5188,75 @@ export function InterestRateModule({ currency }: { currency: any }) {
 /* ============================================================================
  * 12. SALES TAX CALCULATOR MODULE
  * ========================================================================== */
-export function SalesTaxModule({ currency }: { currency: any }) {
+export function SalesTaxModule({ 
+  currency,
+  selectedState,
+  onStateChange
+}: { 
+  currency: any;
+  selectedState?: string;
+  onStateChange?: (state: string) => void;
+}) {
+  const stateCodeInitial = selectedState || 'CA';
+  const initialCfg = useMemo(() => {
+    try {
+      return getStateSalesTaxConfig(stateCodeInitial);
+    } catch {
+      return { stateRate: 6.25, avgLocalRate: 1.5, sourcingRule: 'destination' as const };
+    }
+  }, [stateCodeInitial]);
+
   const [params, setParams] = useState({
     amount: 1500,
     mode: 'add_tax' as 'add_tax' | 'extract_tax',
-    stateRate: 6.25,
-    localRate: 1.5,
+    stateRate: initialCfg.stateRate,
+    localRate: initialCfg.avgLocalRate,
     discountPercent: 10,
     discountType: 'store' as 'store' | 'manufacturer',
     itemType: 'general' as 'general' | 'groceries' | 'clothing' | 'prescription' | 'restaurant',
-    stateCode: 'CA'
+    stateCode: stateCodeInitial,
+    taxYear: 2026
   });
+
+  useEffect(() => {
+    if (selectedState && selectedState !== params.stateCode) {
+      try {
+        const cfg = getStateSalesTaxConfig(selectedState);
+        setParams(prev => ({
+          ...prev,
+          stateCode: selectedState,
+          stateRate: cfg.stateRate,
+          localRate: cfg.avgLocalRate
+        }));
+      } catch {
+        setParams(prev => ({ ...prev, stateCode: selectedState }));
+      }
+    }
+  }, [selectedState]);
+
+  const handleStateSelect = (newCode: string) => {
+    try {
+      const cfg = getStateSalesTaxConfig(newCode);
+      setParams(prev => ({
+        ...prev,
+        stateCode: newCode,
+        stateRate: cfg.stateRate,
+        localRate: cfg.avgLocalRate
+      }));
+      onStateChange?.(newCode);
+    } catch {
+      setParams(prev => ({ ...prev, stateCode: newCode }));
+      onStateChange?.(newCode);
+    }
+  };
+
+  const currentCfg = useMemo(() => {
+    try {
+      return getStateSalesTaxConfig(params.stateCode);
+    } catch {
+      return null;
+    }
+  }, [params.stateCode]);
 
   const res = useMemo(() => calculateSalesTaxRobust(params), [params]);
   const format = (v: number) => `${currency.symbol}${v.toFixed(2)}`;
@@ -5143,7 +5272,7 @@ export function SalesTaxModule({ currency }: { currency: any }) {
             <p className="font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <Info size={14}/> Estimate Disclaimer
             </p>
-            Results are estimates based on average local rates. Not suitable for exact retail tax liability determination.
+            Local sales tax rates represent population-weighted local averages. Tax Year 2026 statutory baseline.
           </div>
           <div className="space-y-1.5">
             <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 ml-1">Operation Mode</span>
@@ -5173,13 +5302,20 @@ export function SalesTaxModule({ currency }: { currency: any }) {
           />
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 ml-1">State Jurisdiction</label>
+            <div className="flex items-center justify-between ml-1">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">State Jurisdiction</label>
+              {currentCfg && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                  {currentCfg.sourcingRule === 'origin' ? 'Origin Sourced' : 'Destination Sourced'}
+                </span>
+              )}
+            </div>
             <select
               value={params.stateCode}
-              onChange={e => setParams({...params, stateCode: e.target.value})}
+              onChange={e => handleStateSelect(e.target.value)}
               className="w-full min-h-[44px] px-3 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
             >
-              {['CA', 'TX', 'NY', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI', 'NJ', 'VA', 'WA', 'AZ', 'MA', 'TN', 'IN', 'MO', 'MD', 'WI', 'CO', 'MN', 'SC', 'AL', 'LA', 'KY', 'OR', 'OK', 'CT', 'UT', 'IA', 'NV', 'AR', 'MS', 'KS', 'NM', 'NE', 'WV', 'ID', 'HI', 'NH', 'ME', 'RI', 'MT', 'DE', 'SD', 'ND', 'AK', 'VT', 'WY', 'DC'].map(code => (
+              {['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'].map(code => (
                 <option key={code} value={code}>{code}</option>
               ))}
             </select>
@@ -5201,8 +5337,20 @@ export function SalesTaxModule({ currency }: { currency: any }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <InputGroup label="State Tax" value={params.stateRate} suffix="%" step="0.1" onChange={(v: number) => setParams({...params, stateRate: v})} />
-            <InputGroup label="Local Tax" value={params.localRate} suffix="%" step="0.1" onChange={(v: number) => setParams({...params, localRate: v})} />
+            <InputGroup 
+              label="State Tax Rate" 
+              value={params.stateRate} 
+              suffix="%" 
+              step="0.01" 
+              onChange={(v: number) => setParams({...params, stateRate: v})} 
+            />
+            <InputGroup 
+              label={`Local Tax (Avg: ${currentCfg?.avgLocalRate || 0}%)`} 
+              value={params.localRate} 
+              suffix="%" 
+              step="0.01" 
+              onChange={(v: number) => setParams({...params, localRate: v})} 
+            />
           </div>
 
           {params.mode === 'add_tax' && (
@@ -5259,8 +5407,16 @@ export function SalesTaxModule({ currency }: { currency: any }) {
               <span className="font-bold text-slate-900 dark:text-white">+{format(res.stateTax)}</span>
             </div>
             <div className="flex justify-between py-2 border-b border-slate-200 dark:border-slate-700">
-              <span className="text-slate-700 dark:text-slate-300 font-medium">Local / City Tax ({params.localRate}%) - Rounded per jurisdiction</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                Local / Municipal Tax ({params.localRate}%) {params.localRate === (currentCfg?.avgLocalRate || 0) ? '(Estimated Average)' : '(Custom Rate)'}
+              </span>
               <span className="font-bold text-slate-900 dark:text-white">+{format(res.localTax)}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-slate-200 dark:border-slate-700 text-xs">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">Sourcing Rule</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200 uppercase">
+                {res.sourcingRule === 'origin' ? 'Origin-Based (Seller Location)' : 'Destination-Based (Buyer Location)'}
+              </span>
             </div>
             {res.centAdjustment !== 0 && (
               <div className="flex justify-between py-2 border-b border-slate-200 dark:border-slate-700 text-xs">

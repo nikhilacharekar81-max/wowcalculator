@@ -83,6 +83,11 @@ export interface YearTaxConfig {
     hsaFamilyLimit: LegalParam<number>;
     healthcareFsaLimit: LegalParam<number>;
   };
+  taxProvisions?: {
+    seniorEnhancementDeduction: Record<FilingStatus, LegalParam<number>>;
+    tipOvertimeDeductionLimit: LegalParam<number>;
+    saltCap: LegalParam<number>;
+  };
 }
 
 export interface LendingRegulationConfig {
@@ -663,6 +668,16 @@ export const US_TAX_CONFIG_BY_YEAR: Record<number, YearTaxConfig> = {
         notes: 'IRS Revenue Procedure 2025-32, § 3.18 - IRC § 125(i) Health FSA limit ($3,400)',
         needsVerification: false
       }
+    },
+    taxProvisions: {
+      seniorEnhancementDeduction: {
+        single: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        mfj: { value: 12000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        mfs: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        hoh: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
+      },
+      tipOvertimeDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      saltCap: { value: 40000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
     }
   }
 };
@@ -1831,7 +1846,7 @@ export const US_STATE_TAX_CONFIGS: Record<string, StateTaxConfig> = {
     stateName: 'North Dakota',
     hasIncomeTax: true,
     type: 'progressive',
-    standardDeduction: { single: 15750, mfj: 31500, mfs: 15750, hoh: 23625 },
+    standardDeduction: { single: 16100, mfj: 32200, mfs: 16100, hoh: 24150 },
     baseSalesTaxRate: 5.0,
     sourceUrl: 'https://www.tax.nd.gov/',
     effectiveDate: '01/01/2026',
@@ -2204,7 +2219,12 @@ export function getStateConfig(stateCode: string, year: number = DEFAULT_TAX_YEA
   const code = (stateCode || 'CA').toUpperCase();
   const baseConfig = US_STATE_TAX_CONFIGS[code];
   if (baseConfig) {
-    return JSON.parse(JSON.stringify(baseConfig));
+    const config = JSON.parse(JSON.stringify(baseConfig));
+    const yearOverride = US_STATE_TAX_CONFIGS_BY_YEAR[year]?.[code];
+    if (yearOverride) {
+      Object.assign(config, yearOverride);
+    }
+    return config;
   }
 
   // Never show a made-up state tax! If not supported, mark hasIncomeTax: false and isEstimated: true with clear warning.
@@ -2220,6 +2240,25 @@ export function getStateConfig(stateCode: string, year: number = DEFAULT_TAX_YEA
     isEstimated: true,
     warning: `State income tax not modeled for ${code}`
   };
+}
+
+/**
+ * 2026 Median Effective Property Tax Rates by State (Tax Foundation / US Census ACS).
+ * Useful for real estate escrow and mortgage property tax rate benchmarking.
+ */
+export const US_STATE_PROPERTY_TAX_RATES: Record<string, number> = {
+  AL: 0.40, AK: 1.04, AZ: 0.63, AR: 0.64, CA: 0.75, CO: 0.55, CT: 1.96, DE: 0.61,
+  DC: 0.62, FL: 0.91, GA: 0.90, HI: 0.32, ID: 0.67, IL: 2.08, IN: 0.84, IA: 1.52,
+  KS: 1.33, KY: 0.83, LA: 0.56, ME: 1.24, MD: 1.05, MA: 1.14, MI: 1.38, MN: 1.11,
+  MS: 0.79, MO: 1.01, MT: 0.74, NE: 1.63, NV: 0.55, NH: 1.93, NJ: 2.23, NM: 0.73,
+  NY: 1.73, NC: 0.82, ND: 0.98, OH: 1.59, OK: 0.89, OR: 0.93, PA: 1.49, RI: 1.53,
+  SC: 0.57, SD: 1.14, TN: 0.56, TX: 1.68, UT: 0.57, VT: 1.83, VA: 0.87, WA: 0.87,
+  WV: 0.57, WI: 1.61, WY: 0.56
+};
+
+export function getStatePropertyTaxRate(stateCode: string): number {
+  const code = (stateCode || 'CA').toUpperCase();
+  return US_STATE_PROPERTY_TAX_RATES[code] ?? 1.20;
 }
 
 export const US_STATE_LIST = [

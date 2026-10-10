@@ -1413,8 +1413,6 @@ function MortgageModule({ currency, onNavigate }: { currency: any; onNavigate?: 
           </div>
         </GlassCard>
       </div>
-
-      <CalculatorDisclaimer />
     </div>
   );
 }
@@ -1473,7 +1471,6 @@ function InvestmentModule({ currency }: { currency: any }) {
             { key: 'balance', label: 'Net Worth', format },
           ]}
         />
-        <CalculatorDisclaimer />
       </div>
     </div>
   );
@@ -1631,7 +1628,6 @@ function DebtModule({ currency }: { currency: any }) {
             </ResponsiveContainer>
           </div>
         </GlassCard>
-        <CalculatorDisclaimer />
       </div>
     </div>
   );
@@ -1774,6 +1770,7 @@ export default function App() {
   });
 
   const [currency, setCurrency] = useState(CURRENCIES[0]);
+  const [selectedState, setSelectedState] = useState<string>('CA');
   const [user, setUser] = useState<User | null>(null);
   const [cats, setCats] = useState<any[]>([]);
   const [subs, setSubs] = useState<any[]>([]);
@@ -2361,27 +2358,25 @@ export default function App() {
               {activeTab === 'home' && <HomePage currency={currency} onNavigate={navigateTo} />}
               {activeTab === 'mortgage' && <MortgageModule currency={currency} onNavigate={navigateTo} />}
               {activeTab === 'loan' && <LoanCalculatorModule currency={currency} />}
-              {activeTab === 'auto' && <AutoLoanModule currency={currency} />}
+              {activeTab === 'auto' && <AutoLoanModule currency={currency} selectedState={selectedState} onStateChange={setSelectedState} />}
               {activeTab === 'interest' && <InterestCalculatorModule currency={currency} />}
               {activeTab === 'payment' && <PaymentCalculatorModule currency={currency} />}
-              {activeTab === 'retirement' && <RetirementModule currency={currency} />}
+              {activeTab === 'retirement' && <RetirementModule currency={currency} selectedState={selectedState} onStateChange={setSelectedState} />}
               {activeTab === 'amortization' && <AmortizationModule currency={currency} />}
               {activeTab === 'investment' && <InvestmentModule currency={currency} />}
               {activeTab === 'inflation' && <InflationModule currency={currency} />}
               {activeTab === 'finance' && <FinanceTVMModule currency={currency} />}
-              {activeTab === 'tax' && <IncomeTaxModule currency={currency} />}
+              {activeTab === 'tax' && <IncomeTaxModule currency={currency} selectedState={selectedState} onStateChange={setSelectedState} />}
               {activeTab === 'compound' && <CompoundInterestModule currency={currency} />}
-              {activeTab === 'salary' && <SalaryModule currency={currency} />}
+              {activeTab === 'salary' && <SalaryModule currency={currency} selectedState={selectedState} onStateChange={setSelectedState} />}
               {activeTab === 'rate' && <InterestRateModule currency={currency} />}
-              {activeTab === 'sales-tax' && <SalesTaxModule currency={currency} />}
+              {activeTab === 'sales-tax' && <SalesTaxModule currency={currency} selectedState={selectedState} onStateChange={setSelectedState} />}
               {activeTab === 'debt' && <DebtModule currency={currency} />}
               {activeTab === 'admin' && <AdminModule cats={cats} subs={subs} />}
             </motion.div>
           </AnimatePresence>
 
-          {activeTab !== 'home' && activeTab !== 'admin' && (
-            <CalculatorDisclaimer />
-          )}
+          {activeTab === 'tax' && <CalculatorDisclaimer />}
         </div>
       </main>
 

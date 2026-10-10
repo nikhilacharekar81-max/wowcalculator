@@ -14,11 +14,11 @@ export function validateSalesTaxInput(input: SalesTaxInput): void {
     throw new Error('Sales tax amount / price cannot be negative.');
   }
 
-  if (input.stateRate < 0) {
+  if (input.stateRate !== undefined && input.stateRate < 0) {
     throw new Error('State sales tax rate cannot be negative.');
   }
 
-  if (input.localRate && input.localRate < 0) {
+  if (input.localRate !== undefined && input.localRate < 0) {
     throw new Error('Local sales tax rate cannot be negative.');
   }
 

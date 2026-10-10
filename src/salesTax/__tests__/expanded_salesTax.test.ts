@@ -43,16 +43,23 @@ export function runExpandedSalesTaxTests() {
   });
   assert(res3.totalTax === 60000, `Test 3.1: Large transaction failed, expected 60000, got ${res3.totalTax}`);
 
-  // 4. Invalid jurisdiction identifier (should fallback to default CA)
-  const res4 = calculateSalesTax({
-    amount: 100,
-    mode: 'add_tax',
-    stateRate: 6.00,
-    localRate: 2.00,
-    taxYear: 2026,
-    stateCode: 'ZZ' // Invalid
-  });
-  assert(res4.stateCode === 'ZZ', 'Test 4.1: Invalid code should be preserved in result');
+  // 4. Invalid jurisdiction identifier (should throw error)
+  let invalidCodeErrorCaught = false;
+  try {
+    calculateSalesTax({
+      amount: 100,
+      mode: 'add_tax',
+      stateRate: 6.00,
+      localRate: 2.00,
+      taxYear: 2026,
+      stateCode: 'ZZ' // Invalid
+    });
+  } catch (e: any) {
+    if (e.message.includes('Invalid state code: ZZ')) {
+      invalidCodeErrorCaught = true;
+    }
+  }
+  assert(invalidCodeErrorCaught, 'Test 4.1: Invalid code should throw error');
 
   // 5. Rounding boundaries (using the same logic as engine)
   const res5 = calculateSalesTax({

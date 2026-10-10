@@ -22,12 +22,32 @@ export interface AuditEvidence {
   limitations?: string;
 }
 
+export interface AppliedRateComponent {
+  component: 'state' | 'local' | 'shipping';
+  rate: number;
+  percentage: number;
+  amount: number;
+  sourceAuthority?: string;
+  isEstimate?: boolean;
+}
+
+export interface TaxabilityDecision {
+  category: string;
+  taxable: boolean;
+  ruleId: string;
+  sourceAuthority?: string;
+  note: string;
+}
+
 export interface CalculationAuditTrail {
   determinationId: string;
   input: SalesTaxInput;
+  transactionDate: string;
+  taxYear: number;
   jurisdiction: string;
-  appliedRates: { component: string; rate: number }[];
-  taxabilityDecisions: { category: string; taxable: boolean; note: string }[];
+  sourcingRule: 'destination' | 'origin';
+  appliedRates: AppliedRateComponent[];
+  taxabilityDecisions: TaxabilityDecision[];
   roundingLog: string;
   engineVersion: string;
   ruleId: string;
@@ -37,8 +57,8 @@ export interface CalculationAuditTrail {
 export interface SalesTaxInput {
   amount: number;
   mode: CalculationMode;
-  stateRate: number;
-  localRate: number;
+  stateRate?: number;
+  localRate?: number;
   discountPercent?: number;
   discountType?: DiscountType;
   itemType?: TaxableItemType;
@@ -61,6 +81,7 @@ export interface SalesTaxResult {
   exemptionNote: string;
   itemType: TaxableItemType;
   stateCode: string;
+  sourcingRule: 'destination' | 'origin';
   verificationStatus: EvidenceStatus;
   sourceInfo: {
     name: string;
