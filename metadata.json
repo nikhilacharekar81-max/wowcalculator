@@ -1,0 +1,6 @@
+{
+  "name": "WowCalc: The Ultimate Mathematical Platform",
+  "description": "A high-performance, wow-themed calculator platform with advanced scientific functions and category management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
