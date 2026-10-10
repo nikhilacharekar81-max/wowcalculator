@@ -30,6 +30,7 @@ export interface CalculationAuditTrail {
   taxabilityDecisions: { category: string; taxable: boolean; note: string }[];
   roundingLog: string;
   engineVersion: string;
+  ruleId: string;
   timestamp: string;
 }
 

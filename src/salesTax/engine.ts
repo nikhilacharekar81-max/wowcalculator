@@ -8,6 +8,9 @@ function roundToCents(val: number): number {
 
 export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
   const taxYear = input.taxYear !== undefined ? input.taxYear : 2026;
+  if (taxYear !== 2026) {
+    throw new Error(`Unsupported tax year: ${taxYear}. Only 2026 is supported.`);
+  }
   validateSalesTaxInput({ ...input, taxYear });
 
   const stateCode = (input.stateCode || 'CA').toUpperCase();
@@ -99,7 +102,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
       exemptionNote,
       itemType,
       stateCode,
-      verificationStatus: stateCfg.verificationStatus,
+      verificationStatus: stateCfg.evidence.verificationStatus,
       sourceInfo: {
         name: stateCfg.sourceName,
         url: stateCfg.sourceUrl,
@@ -111,9 +114,14 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         input: input,
         jurisdiction: stateCode,
         appliedRates: [{ component: 'state', rate: effectiveStateR }, { component: 'local', rate: effectiveLocalR }],
-        taxabilityDecisions: [],
-        roundingLog: 'Standard rounding to cents',
+        taxabilityDecisions: [
+          { category: 'General', taxable: itemType === 'general', note: exemptionNote },
+          { category: 'Groceries', taxable: itemType === 'groceries', note: exemptionNote },
+          { category: 'Clothing', taxable: itemType === 'clothing', note: exemptionNote }
+        ],
+        roundingLog: 'Standard rounding to cents, applied per jurisdiction',
         engineVersion: '2026.1.0',
+        ruleId: stateCfg.evidence.ruleId,
         timestamp: new Date().toISOString()
       }
     };
@@ -149,7 +157,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
       exemptionNote,
       itemType,
       stateCode,
-      verificationStatus: stateCfg.verificationStatus,
+      verificationStatus: stateCfg.evidence.verificationStatus,
       sourceInfo: {
         name: stateCfg.sourceName,
         url: stateCfg.sourceUrl,
@@ -161,9 +169,14 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         input: input,
         jurisdiction: stateCode,
         appliedRates: [{ component: 'state', rate: effectiveStateR }, { component: 'local', rate: effectiveLocalR }],
-        taxabilityDecisions: [],
-        roundingLog: 'Standard rounding to cents',
+        taxabilityDecisions: [
+          { category: 'General', taxable: itemType === 'general', note: exemptionNote },
+          { category: 'Groceries', taxable: itemType === 'groceries', note: exemptionNote },
+          { category: 'Clothing', taxable: itemType === 'clothing', note: exemptionNote }
+        ],
+        roundingLog: 'Standard rounding to cents, applied per jurisdiction',
         engineVersion: '2026.1.0',
+        ruleId: stateCfg.evidence.ruleId,
         timestamp: new Date().toISOString()
       }
     };

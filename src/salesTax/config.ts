@@ -1076,24 +1076,7 @@ export function getStateSalesTaxConfig(stateCode: string, transactionDate: strin
   const code = (stateCode || 'CA').toUpperCase();
   const cfg = SALES_TAX_CONFIG_2026[code];
   if (!cfg) {
-    return {
-      code,
-      name: code,
-      stateRate: 6.00,
-      avgLocalRate: 1.50,
-      combinedRate: 7.50,
-      foodTaxable: true,
-      clothingTaxable: true,
-      prescriptionTaxable: false,
-      digitalTaxable: true,
-      shippingTaxable: true,
-      sourcingRule: 'destination',
-      verificationStatus: 'PARTIALLY_VERIFIED',
-      sourceName: 'State Department of Revenue (Estimated / Fallback)',
-      sourceUrl: 'https://www.taxadmin.org/',
-      effectiveDate: '2026-01-01',
-      evidence: { ruleId: 'N/A', category: 'N/A', sourceAuthority: 'N/A', sourceUrl: 'N/A', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: [] }
-    };
+    throw new Error(`State code ${code} not supported.`);
   }
   if (new Date(transactionDate) < new Date(cfg.evidence.effectiveFrom)) {
     throw new Error(`Transaction date ${transactionDate} is before the effective date ${cfg.evidence.effectiveFrom} of the rule ${cfg.evidence.ruleId}.`);

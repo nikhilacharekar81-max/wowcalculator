@@ -46,6 +46,7 @@ import {
   normalizeMonthYearStr,
   addMonthsToDateStr
 } from './engine';
+import { calculateSalesTax as calculateSalesTaxRobust } from './salesTax/engine';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -5128,7 +5129,7 @@ export function SalesTaxModule({ currency }: { currency: any }) {
     stateCode: 'CA'
   });
 
-  const res = useMemo(() => calculateSalesTax(params), [params]);
+  const res = useMemo(() => calculateSalesTaxRobust(params), [params]);
   const format = (v: number) => `${currency.symbol}${v.toFixed(2)}`;
 
   return (
