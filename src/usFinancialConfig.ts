@@ -86,7 +86,7 @@ export interface YearTaxConfig {
   taxProvisions?: {
     seniorEnhancementDeduction: Record<FilingStatus, LegalParam<number>>;
     tipDeductionLimit: LegalParam<number>;
-    overtimeDeductionLimit: LegalParam<number>;
+    overtimeDeductionLimit: Record<FilingStatus, LegalParam<number>>;
     phaseoutThresholds: Record<FilingStatus, number>;
     saltCap: LegalParam<number>;
   };
@@ -678,8 +678,13 @@ export const US_TAX_CONFIG_BY_YEAR: Record<number, YearTaxConfig> = {
         mfs: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
         hoh: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
       },
-      tipDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
-      overtimeDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      tipDeductionLimit: { value: 25000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      overtimeDeductionLimit: {
+        single: { value: 12500, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        mfj: { value: 25000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        mfs: { value: 12500, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+        hoh: { value: 12500, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
+      },
       phaseoutThresholds: {
         single: 75000,
         mfj: 150000,
@@ -933,7 +938,7 @@ export const US_STATE_TAX_CONFIGS: Record<string, StateTaxConfig> = {
     stateName: 'California',
     hasIncomeTax: true,
     type: 'progressive',
-    standardDeduction: { single: 5706, mfj: 11412, mfs: 5706, hoh: 11412 }, // Updated to 2026 FTB values (Cal. Rev. & Tax. Code § 17053.5)
+    standardDeduction: { single: 5900, mfj: 11800, mfs: 5900, hoh: 11800 }, // Updated to 2026 FTB values (Cal. Rev. & Tax. Code § 17053.5)
     baseSalesTaxRate: 7.25,
     sourceUrl: 'https://www.ftb.ca.gov/',
     effectiveDate: '01/01/2026',
