@@ -85,7 +85,9 @@ export interface YearTaxConfig {
   };
   taxProvisions?: {
     seniorEnhancementDeduction: Record<FilingStatus, LegalParam<number>>;
-    tipOvertimeDeductionLimit: LegalParam<number>;
+    tipDeductionLimit: LegalParam<number>;
+    overtimeDeductionLimit: LegalParam<number>;
+    phaseoutThresholds: Record<FilingStatus, number>;
     saltCap: LegalParam<number>;
   };
 }
@@ -676,7 +678,14 @@ export const US_TAX_CONFIG_BY_YEAR: Record<number, YearTaxConfig> = {
         mfs: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
         hoh: { value: 6000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
       },
-      tipOvertimeDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      tipDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      overtimeDeductionLimit: { value: 10000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' },
+      phaseoutThresholds: {
+        single: 75000,
+        mfj: 150000,
+        mfs: 75000,
+        hoh: 112500
+      },
       saltCap: { value: 40000, effectiveDate: '01/01/2026', sourceUrl: 'https://www.irs.gov/' }
     }
   }
@@ -924,7 +933,7 @@ export const US_STATE_TAX_CONFIGS: Record<string, StateTaxConfig> = {
     stateName: 'California',
     hasIncomeTax: true,
     type: 'progressive',
-    standardDeduction: { single: 5900, mfj: 11800, mfs: 5900, hoh: 11800 }, // Standard deduction and bracket thresholds per California Franchise Tax Board (FTB) 2026 indexing notices (Cal. Rev. & Tax. Code § 17053.5)
+    standardDeduction: { single: 5706, mfj: 11412, mfs: 5706, hoh: 11412 }, // Updated to 2026 FTB values (Cal. Rev. & Tax. Code § 17053.5)
     baseSalesTaxRate: 7.25,
     sourceUrl: 'https://www.ftb.ca.gov/',
     effectiveDate: '01/01/2026',

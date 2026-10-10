@@ -226,8 +226,9 @@ export function calculateCompoundInterest(
  * ========================================================================== */
 
 export function calculateFicaTax(
-  grossSalary: number, 
-  preTaxHsaFsa: number = 0,
+  grossSalary: number,
+  preTaxHsa: number = 0,
+  preTaxFsa: number = 0,
   filingStatus: FilingStatus = 'single',
   year: number = DEFAULT_TAX_YEAR
 ) {
@@ -242,7 +243,7 @@ export function calculateFicaTax(
   // Pre-Tax deduction exclusions:
   // Section 125 cafeteria plans (HSA / Health FSA) are exempt from FICA under IRC § 3121(a)(5)(G).
   // Standard 401(k) / 403(b) contributions are SUBJECT to FICA under IRC § 3121(v)(1)(A).
-  const ficaTaxableWages = Math.max(0, grossSalary - preTaxHsaFsa);
+  const ficaTaxableWages = Math.max(0, grossSalary - preTaxHsa - preTaxFsa);
   
   // Social Security (OASDI)
   const ssCap = yearConfig.socialSecurity.wageBaseCap.value;
@@ -286,7 +287,8 @@ export interface ComprehensiveTaxInput {
   filingStatus?: FilingStatus;
   stateCode?: string;
   preTax401k?: number;
-  preTaxHsaFsa?: number;
+  preTaxHsa?: number;
+  preTaxFsa?: number;
   itemizedDeductions?: number;
   deductionMode?: 'standard' | 'itemized';
   isSenior?: boolean;
@@ -317,57 +319,91 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     warnings.push('Tax Year 2026 values are projections derived from statutory inflation adjustment formulas and require verification upon release of final IRS Revenue Procedure.');
   }
 
+  if (input.annualIncome !== undefined && (typeof input.annualIncome !== 'number' || isNaN(input.annualIncome) || input.annualIncome < 0)) {
+    throw new CalculationError('INVALID_INPUT', 'Annual income must be a valid non-negative number.');
+  }
+  if (input.selfEmploymentIncome !== undefined && (typeof input.selfEmploymentIncome !== 'number' || isNaN(input.selfEmploymentIncome) || input.selfEmploymentIncome < 0)) {
+    throw new CalculationError('INVALID_INPUT', 'Self-employment income must be a valid non-negative number.');
+  }
+
   const grossSalary = Math.max(0, input.annualIncome);
   const selfEmploymentIncome = Math.max(0, input.selfEmploymentIncome || 0);
   const preTax401k = Math.max(0, input.preTax401k || 0);
-  const preTaxHsaFsa = Math.max(0, input.preTaxHsaFsa || 0);
-  const totalPreTax = preTax401k + preTaxHsaFsa;
+  const preTaxHsa = Math.max(0, input.preTaxHsa || 0);
+  const preTaxFsa = Math.max(0, input.preTaxFsa || 0);
+  const totalPreTax = preTax401k + preTaxHsa + preTaxFsa;
 
   // FICA calculation for W-2 wages
-  const ficaRes = calculateFicaTax(grossSalary, preTaxHsaFsa, filingStatus, year);
+  const ficaRes = calculateFicaTax(grossSalary, preTaxHsa, preTaxFsa, filingStatus, year);
   const ficaTax = ficaRes.totalFica;
 
-  // SECA Tax Calculation (Schedule SE / IRC § 1402 & § 164(f))
+  // SECA Tax Calculation (Schedule SE / IRC § 1402 & § 164(f) & Form 8959)
   let secaTax = 0;
   let sec164fDeduction = 0;
   let seNetEarnings = 0;
   if (selfEmploymentIncome > 0) {
     seNetEarnings = roundToCents(selfEmploymentIncome * 0.9235);
     const ssCap = yearConfig.socialSecurity.wageBaseCap.value;
-    const seSsTax = roundToCents(Math.min(seNetEarnings, ssCap) * 0.124); // 12.4% SE OASDI
+    const w2SsWages = Math.min(ficaRes.ficaTaxableWages, ssCap);
+    const remainingSsCap = Math.max(0, ssCap - w2SsWages);
+    const seSsTaxable = Math.min(seNetEarnings, remainingSsCap);
+    const seSsTax = roundToCents(seSsTaxable * 0.124); // 12.4% SE OASDI on remaining wage base cap per IRC § 1402(b)
     const seMedTax = roundToCents(seNetEarnings * 0.029); // 2.9% SE Medicare
     const addThreshold = yearConfig.medicare.additionalThreshold[filingStatus]?.value || (filingStatus === 'mfj' ? 250000 : filingStatus === 'mfs' ? 125000 : 200000);
-    const combinedWagesAndSe = ficaRes.ficaTaxableWages + seNetEarnings;
-    const seAddMed = roundToCents(Math.max(0, combinedWagesAndSe - addThreshold) * 0.009);
+    const totalMedicareEarnings = ficaRes.ficaTaxableWages + seNetEarnings;
+    const totalAddMed = roundToCents(Math.max(0, totalMedicareEarnings - addThreshold) * 0.009);
+    const seAddMed = roundToCents(Math.max(0, totalAddMed - ficaRes.additionalMedicare));
     secaTax = roundToCents(seSsTax + seMedTax + seAddMed);
     sec164fDeduction = roundToCents(secaTax * 0.5); // IRC § 164(f) deductible half of self-employment tax
   }
 
-  // New 2026 Provisions
+  // Adjusted Gross Income (AGI) incorporates gross salary + SE income - pre-tax - IRC § 164(f) deduction
+  const adjustedGrossIncome = Math.max(0, grossSalary + selfEmploymentIncome - totalPreTax - sec164fDeduction);
+
+  // 2026 Tax Provisions: Qualified Tips, Qualified Overtime Premium, and Senior Deduction with Separate Rules, Limits & Income Phaseouts
+  const phaseoutThresholds = yearConfig.taxProvisions?.phaseoutThresholds || {
+    single: 75000,
+    mfj: 150000,
+    mfs: 75000,
+    hoh: 112500
+  };
+  const phaseoutThreshold = phaseoutThresholds[filingStatus] || 75000;
+  const excessAgI = Math.max(0, adjustedGrossIncome - phaseoutThreshold);
+  // Phaseout: 5% reduction per dollar of excess AGI over threshold, phased out over $20,000 range
+  const phaseoutFactor = Math.max(0, 1 - excessAgI / 20000);
+
   const saltCap = yearConfig.taxProvisions?.saltCap?.value || 40000;
   const saltDeduction = Math.min(input.saltPaid || 0, saltCap);
-  
-  const tipOvertimeLimit = yearConfig.taxProvisions?.tipOvertimeDeductionLimit?.value || 25000;
-  const tipOvertimeDeduction = Math.min((input.tipIncome || 0) + (input.overtimeIncome || 0), tipOvertimeLimit);
-  
-  const seniorDeduction = input.isSenior && yearConfig.taxProvisions
+
+  // Tip Deduction: separate limit ($10,000), qualified service tips only, subject to AGI phaseout
+  const rawTipIncome = Math.max(0, input.tipIncome || 0);
+  const tipMaxCap = yearConfig.taxProvisions?.tipDeductionLimit?.value || 10000;
+  const allowableTip = Math.min(rawTipIncome, tipMaxCap);
+  const tipDeduction = roundToCents(allowableTip * phaseoutFactor);
+
+  // Overtime Deduction: separate limit ($10,000), qualifying overtime premium allowed by federal law only (overtime premium = total overtime pay * (0.5 / 1.5) = 1/3 of total overtime pay under FLSA), subject to AGI phaseout
+  const rawOvertimeIncome = Math.max(0, input.overtimeIncome || 0);
+  const qualifyingOtPremium = roundToCents(rawOvertimeIncome * (1 / 3));
+  const otMaxCap = yearConfig.taxProvisions?.overtimeDeductionLimit?.value || 10000;
+  const allowableOt = Math.min(qualifyingOtPremium, otMaxCap);
+  const overtimeDeduction = roundToCents(allowableOt * phaseoutFactor);
+
+  // Senior Deduction: filing-status specific amount, applicable age (>= 65), subject to income phaseout
+  const baseSeniorVal = input.isSenior && yearConfig.taxProvisions
     ? (yearConfig.taxProvisions.seniorEnhancementDeduction[filingStatus]?.value || 0)
     : 0;
+  const seniorDeduction = roundToCents(baseSeniorVal * phaseoutFactor);
 
   // 1. Federal Standard vs Itemized Deduction
   const standardDeduction = yearConfig.standardDeduction[filingStatus].value;
-  // If deductionMode === 'itemized', use exactly itemizedDeductions (even if below standard)
   const effectiveFederalDeduction = input.deductionMode === 'itemized'
     ? Math.max(0, (input.itemizedDeductions || 0) + saltDeduction)
     : (input.itemizedDeductions !== undefined && input.itemizedDeductions > standardDeduction
         ? input.itemizedDeductions + saltDeduction
         : standardDeduction);
 
-  // Adjusted Gross Income (AGI) incorporates gross salary + SE income - pre-tax - IRC § 164(f) deduction
-  const adjustedGrossIncome = Math.max(0, grossSalary + selfEmploymentIncome - totalPreTax - sec164fDeduction);
-
-  // Federal Taxable Income = AGI - Federal Deduction - Senior/Tip/Overtime Deductions
-  const federalTaxableIncome = Math.max(0, adjustedGrossIncome - effectiveFederalDeduction - seniorDeduction - tipOvertimeDeduction);
+  // Federal Taxable Income = AGI - Federal Deduction - Senior Deduction - Tip Deduction - Overtime Deduction
+  const federalTaxableIncome = Math.max(0, adjustedGrossIncome - effectiveFederalDeduction - seniorDeduction - tipDeduction - overtimeDeduction);
 
   // 2. Federal Income Tax using 2026 IRS Withholding Method (Brackets)
   const federalBrackets = yearConfig.brackets[filingStatus].value;
@@ -399,22 +435,24 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     // NJ: HSA, Health FSA, and Dependent-Care FSA contributions are taxable compensation.
     
     let stateExempt401k = preTax401k;
-    let stateExemptHsaFsa = preTaxHsaFsa;
+    let stateExemptHsa = preTaxHsa;
+    let stateExemptFsa = preTaxFsa;
 
     if (stateCode === 'PA') {
       stateExempt401k = 0; // PA does not conform to federal 401k/403b/457
     }
     
     if (stateCode === 'CA') {
-      stateExemptHsaFsa = 0; // CA does not allow pre-tax HSA
+      stateExemptHsa = 0; // CA does not allow pre-tax HSA
     }
     
     if (stateCode === 'NJ') {
-      stateExemptHsaFsa = 0; // NJ does not allow pre-tax HSA, Health FSA, or Dependent-Care FSA
+      stateExemptHsa = 0; // NJ does not allow pre-tax HSA
+      stateExemptFsa = 0; // NJ does not allow pre-tax Health FSA
     }
 
 
-    const statePreTaxExempt = stateExempt401k + stateExemptHsaFsa;
+    const statePreTaxExempt = stateExempt401k + stateExemptHsa + stateExemptFsa;
 
     stateTaxableIncome = Math.max(0, grossSalary - statePreTaxExempt - stateDeduction);
 
@@ -452,9 +490,14 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     secaTax,
     sec164fDeduction,
     preTax401k,
-    preTaxHsaFsa,
+    preTaxHsa,
+    preTaxFsa,
     totalPreTax,
     federalStandardDeduction: standardDeduction,
+    tipDeduction,
+    overtimeDeduction,
+    seniorDeduction,
+    phaseoutFactor,
     federalTaxableIncome,
     federalTax,
     federalEffectiveRate: (grossSalary + selfEmploymentIncome) > 0 ? (federalTax / (grossSalary + selfEmploymentIncome)) * 100 : 0,
@@ -522,7 +565,8 @@ export function calculateIncomeTax(annualIncome: number, year: number = DEFAULT_
     filingStatus,
     stateCode: 'CA',
     preTax401k: 0,
-    preTaxHsaFsa: 0
+    preTaxHsa: 0,
+    preTaxFsa: 0
   });
 
   return {
@@ -1076,7 +1120,8 @@ export interface SalaryInput {
   filingStatus?: FilingStatus;
   stateCode?: string;
   preTax401k?: number;
-  preTaxHsaFsa?: number;
+  preTaxHsa?: number;
+  preTaxFsa?: number;
 
   // Optional flat tax override
   useFlatTaxOverride?: boolean;
@@ -1278,7 +1323,8 @@ export function calculateSalary(input: SalaryInput) {
     const filingStatus = input.filingStatus ?? 'single';
     const stateCode = (input.stateCode ?? 'CA').toUpperCase();
     const preTax401k = Math.max(0, input.preTax401k || 0);
-    const preTaxHsaFsa = Math.max(0, input.preTaxHsaFsa || 0);
+    const preTaxHsa = Math.max(0, input.preTaxHsa || 0);
+    const preTaxFsa = Math.max(0, input.preTaxFsa || 0);
 
     const compTax = calculateComprehensiveTax({
       annualIncome: annualGross,
@@ -1286,7 +1332,8 @@ export function calculateSalary(input: SalaryInput) {
       filingStatus,
       stateCode,
       preTax401k,
-      preTaxHsaFsa
+      preTaxHsa,
+      preTaxFsa
     });
 
     comprehensiveTaxDetails = compTax;

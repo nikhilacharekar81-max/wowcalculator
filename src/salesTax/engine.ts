@@ -239,7 +239,8 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         engineVersion: '2026.1.0',
         ruleId: stateCfg.evidence?.ruleId || `${stateCode}-2026-001`,
         timestamp: new Date().toISOString()
-      }
+      },
+      localRateIsEstimate: isLocalRateEstimated
     };
   } else {
     const total = Math.max(0, input.amount);
@@ -336,7 +337,8 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         engineVersion: '2026.1.0',
         ruleId: stateCfg.evidence?.ruleId || `${stateCode}-2026-001`,
         timestamp: new Date().toISOString()
-      }
+      },
+      localRateIsEstimate: isLocalRateEstimated
     };
   }
 }

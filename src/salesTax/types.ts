@@ -96,6 +96,7 @@ export interface SalesTaxResult {
     effectiveDate: string;
   };
   auditTrail: CalculationAuditTrail;
+  localRateIsEstimate: boolean;
 }
 
 export interface StateSalesTaxConfig {

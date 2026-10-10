@@ -3993,7 +3993,8 @@ export function IncomeTaxModule({
   const [age, setAge] = useState<number>(35);
   const [hsaCoverage, setHsaCoverage] = useState<'single' | 'family'>('single');
   const [preTax401k, setPreTax401k] = useState<number>(6000);
-  const [preTaxHsaFsa, setPreTaxHsaFsa] = useState<number>(0);
+  const [preTaxHsa, setPreTaxHsa] = useState<number>(0);
+  const [preTaxFsa, setPreTaxFsa] = useState<number>(0);
   const [deductionMode, setDeductionMode] = useState<'standard' | 'itemized'>('standard');
   const [itemizedAmount, setItemizedAmount] = useState<number>(10000);
 
@@ -4029,10 +4030,12 @@ export function IncomeTaxModule({
 
   // Cap effective values used in calculation
   const capped401k = Math.min(preTax401k, max401kLimit);
-  const cappedHsaFsa = Math.min(preTaxHsaFsa, maxHsaFsaAllowed);
+  const cappedHsa = Math.min(preTaxHsa, maxHsaLimit);
+  const cappedFsa = Math.min(preTaxFsa, maxFsaLimit);
 
   const is401kOverLimit = preTax401k > max401kLimit;
-  const isHsaFsaOverLimit = preTaxHsaFsa > maxHsaFsaAllowed;
+  const isHsaOverLimit = preTaxHsa > maxHsaLimit;
+  const isFsaOverLimit = preTaxFsa > maxFsaLimit;
 
   const taxResult = useMemo(() => {
     return calculateComprehensiveTax({
@@ -4041,12 +4044,13 @@ export function IncomeTaxModule({
       filingStatus,
       stateCode,
       preTax401k: capped401k,
-      preTaxHsaFsa: cappedHsaFsa,
+      preTaxHsa: cappedHsa,
+      preTaxFsa: cappedFsa,
       itemizedDeductions: deductionMode === 'itemized' ? itemizedAmount : undefined,
       deductionMode,
       isSenior: age >= 65
     });
-  }, [annualIncome, year, filingStatus, stateCode, capped401k, cappedHsaFsa, deductionMode, itemizedAmount, age]);
+  }, [annualIncome, year, filingStatus, stateCode, capped401k, cappedHsa, cappedFsa, deductionMode, itemizedAmount, age]);
 
   const format = (v: number) => `$${new Intl.NumberFormat().format(Math.round(v))}`;
   const formatDetailed = (v: number) => `$${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}`;
@@ -4057,7 +4061,7 @@ export function IncomeTaxModule({
     { name: 'FICA (SS & Medicare)', value: taxResult.ficaTax, color: '#f59e0b' },
     ...(taxResult.stateTax > 0 ? [{ name: `${taxResult.stateCode} State Tax`, value: taxResult.stateTax, color: '#6366f1' }] : []),
     ...(capped401k > 0 ? [{ name: 'Pre-Tax 401(k)', value: capped401k, color: '#06b6d4' }] : []),
-    ...(cappedHsaFsa > 0 ? [{ name: 'Pre-Tax HSA/FSA', value: cappedHsaFsa, color: '#14b8a6' }] : []),
+    ...( (cappedHsa + cappedFsa) > 0 ? [{ name: 'Pre-Tax HSA/FSA', value: (cappedHsa + cappedFsa), color: '#14b8a6' }] : []),
   ];
 
   const stateCfg = getStateConfig(stateCode, year);
@@ -4227,14 +4231,25 @@ export function IncomeTaxModule({
 
             <div>
               <InputGroup 
-                label={`Pre-Tax HSA / Healthcare FSA (Combined Max: ${format(maxHsaFsaAllowed)})`} 
-                value={preTaxHsaFsa} 
+                label={`HSA Contribution (Max: ${format(maxHsaLimit)})`} 
+                value={preTaxHsa} 
                 prefix="$" 
-                onChange={(v: number) => setPreTaxHsaFsa(v)} 
+                onChange={(v: number) => setPreTaxHsa(v)} 
               />
-              {isHsaFsaOverLimit && (
+              <InputGroup 
+                label={`Healthcare FSA Contribution (Max: ${format(maxFsaLimit)})`} 
+                value={preTaxFsa} 
+                prefix="$" 
+                onChange={(v: number) => setPreTaxFsa(v)} 
+              />
+              {isHsaOverLimit && (
                 <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">
-                  Warning: Exceeds combined annual statutory limit of {format(maxHsaFsaAllowed)} (HSA {format(maxHsaLimit)} + FSA {format(maxFsaLimit)}). Amount used is capped at {format(maxHsaFsaAllowed)}.
+                  Warning: Exceeds annual HSA limit of {format(maxHsaLimit)}. Amount used is capped at {format(maxHsaLimit)}.
+                </p>
+              )}
+              {isFsaOverLimit && (
+                <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">
+                  Warning: Exceeds annual Healthcare FSA limit of {format(maxFsaLimit)}. Amount used is capped at {format(maxFsaLimit)}.
                 </p>
               )}
             </div>
@@ -4406,10 +4421,10 @@ export function IncomeTaxModule({
                   <span className="font-bold text-cyan-600 dark:text-cyan-400 font-mono">-{formatDetailed(capped401k / 12)}</span>
                 </div>
               )}
-              {cappedHsaFsa > 0 && (
+              {(cappedHsa + cappedFsa) > 0 && (
                 <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-700">
                   <span className="text-slate-700 dark:text-slate-300 font-medium">Pre-Tax HSA/FSA (Sec. 125)</span>
-                  <span className="font-bold text-teal-600 dark:text-teal-400 font-mono">-{formatDetailed(cappedHsaFsa / 12)}</span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400 font-mono">-{formatDetailed((cappedHsa + cappedFsa) / 12)}</span>
                 </div>
               )}
               <div className="flex justify-between py-2.5 border-t-2 border-slate-300 dark:border-slate-600">
@@ -4598,7 +4613,8 @@ export function SalaryModule({
     filingStatus: 'single' as FilingStatus,
     stateCode: selectedState || 'CA',
     preTax401k: 0,
-    preTaxHsaFsa: 0,
+    preTaxHsa: 0,
+    preTaxFsa: 0,
 
     // Optional Flat Override (Rough estimate)
     useFlatTaxOverride: false,
@@ -4672,7 +4688,8 @@ export function SalaryModule({
     filingStatus: params.filingStatus,
     stateCode: params.stateCode,
     preTax401k: params.preTax401k,
-    preTaxHsaFsa: params.preTaxHsaFsa,
+    preTaxHsa: params.preTaxHsa,
+    preTaxFsa: params.preTaxFsa,
     useFlatTaxOverride: params.useFlatTaxOverride,
     estimatedTaxPercent: params.estimatedTaxPercent,
     applyCaliforniaDailyOvertime: params.applyCaliforniaDailyOvertime && params.stateCode === 'CA',
@@ -4919,10 +4936,16 @@ export function SalaryModule({
                   onChange={(v: number) => setParams({ ...params, preTax401k: v })} 
                 />
                 <InputGroup 
-                  label="Pre-Tax HSA / FSA" 
-                  value={params.preTaxHsaFsa} 
+                  label="Pre-Tax HSA" 
+                  value={params.preTaxHsa} 
                   prefix={currency.symbol} 
-                  onChange={(v: number) => setParams({ ...params, preTaxHsaFsa: v })} 
+                  onChange={(v: number) => setParams({ ...params, preTaxHsa: v })} 
+                />
+                <InputGroup 
+                  label="Pre-Tax FSA" 
+                  value={params.preTaxFsa} 
+                  prefix={currency.symbol} 
+                  onChange={(v: number) => setParams({ ...params, preTaxFsa: v })} 
                 />
               </div>
             </div>
