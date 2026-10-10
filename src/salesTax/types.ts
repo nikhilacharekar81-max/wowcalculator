@@ -4,7 +4,34 @@ export type DiscountType = 'store' | 'manufacturer';
 
 export type CalculationMode = 'add_tax' | 'extract_tax';
 
-export type VerificationStatus = 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'NOT_VERIFIED';
+export type EvidenceStatus = 'UNVERIFIED' | 'IN_REVIEW' | 'VERIFIED' | 'STALE' | 'CONFLICTED' | 'REJECTED';
+
+export interface AuditEvidence {
+  ruleId: string;
+  category: string;
+  sourceAuthority: string;
+  sourceUrl: string;
+  statuteOrRegulation?: string;
+  effectiveFrom: string;
+  effectiveTo?: string;
+  sourcePublicationDate?: string;
+  lastCheckedDate: string;
+  verificationStatus: EvidenceStatus;
+  reviewer?: string;
+  relatedTestIds: string[];
+  limitations?: string;
+}
+
+export interface CalculationAuditTrail {
+  determinationId: string;
+  input: SalesTaxInput;
+  jurisdiction: string;
+  appliedRates: { component: string; rate: number }[];
+  taxabilityDecisions: { category: string; taxable: boolean; note: string }[];
+  roundingLog: string;
+  engineVersion: string;
+  timestamp: string;
+}
 
 export interface SalesTaxInput {
   amount: number;
@@ -17,6 +44,7 @@ export interface SalesTaxInput {
   stateCode?: string;
   shippingAmount?: number;
   taxYear: number;
+  transactionDate?: string;
 }
 
 export interface SalesTaxResult {
@@ -32,13 +60,14 @@ export interface SalesTaxResult {
   exemptionNote: string;
   itemType: TaxableItemType;
   stateCode: string;
-  verificationStatus: VerificationStatus;
+  verificationStatus: EvidenceStatus;
   sourceInfo: {
     name: string;
     url: string;
     taxYear: number;
     effectiveDate: string;
   };
+  auditTrail: CalculationAuditTrail;
 }
 
 export interface StateSalesTaxConfig {
@@ -54,8 +83,9 @@ export interface StateSalesTaxConfig {
   digitalTaxable: boolean;
   shippingTaxable: boolean;
   sourcingRule: 'destination' | 'origin';
-  verificationStatus: VerificationStatus;
+  verificationStatus: EvidenceStatus;
   sourceName: string;
   sourceUrl: string;
   effectiveDate: string;
+  evidence: AuditEvidence;
 }

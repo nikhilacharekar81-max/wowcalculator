@@ -5138,6 +5138,12 @@ export function SalesTaxModule({ currency }: { currency: any }) {
           <h3 className="text-lg font-black flex items-center gap-2 text-slate-900 dark:text-white">
             <DollarSign size={20} className="text-pink-600 dark:text-pink-400" aria-hidden="true" /> Sales Tax Engine
           </h3>
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+            <p className="font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <Info size={14}/> Estimate Disclaimer
+            </p>
+            Results are estimates based on average local rates. Not suitable for exact retail tax liability determination.
+          </div>
           <div className="space-y-1.5">
             <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 ml-1">Operation Mode</span>
             <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl">

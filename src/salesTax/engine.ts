@@ -11,7 +11,8 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
   validateSalesTaxInput({ ...input, taxYear });
 
   const stateCode = (input.stateCode || 'CA').toUpperCase();
-  const stateCfg = getStateSalesTaxConfig(stateCode, taxYear);
+  const transactionDate = input.transactionDate || '2026-01-01';
+  const stateCfg = getStateSalesTaxConfig(stateCode, transactionDate);
 
   const discountPct = Math.max(0, Math.min(100, input.discountPercent || 0));
   const discountRate = discountPct / 100;
@@ -104,6 +105,16 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         url: stateCfg.sourceUrl,
         taxYear: 2026,
         effectiveDate: stateCfg.effectiveDate
+      },
+      auditTrail: {
+        determinationId: `DET-${Date.now()}`,
+        input: input,
+        jurisdiction: stateCode,
+        appliedRates: [{ component: 'state', rate: effectiveStateR }, { component: 'local', rate: effectiveLocalR }],
+        taxabilityDecisions: [],
+        roundingLog: 'Standard rounding to cents',
+        engineVersion: '2026.1.0',
+        timestamp: new Date().toISOString()
       }
     };
   } else {
@@ -144,6 +155,16 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         url: stateCfg.sourceUrl,
         taxYear: 2026,
         effectiveDate: stateCfg.effectiveDate
+      },
+      auditTrail: {
+        determinationId: `DET-${Date.now()}`,
+        input: input,
+        jurisdiction: stateCode,
+        appliedRates: [{ component: 'state', rate: effectiveStateR }, { component: 'local', rate: effectiveLocalR }],
+        taxabilityDecisions: [],
+        roundingLog: 'Standard rounding to cents',
+        engineVersion: '2026.1.0',
+        timestamp: new Date().toISOString()
       }
     };
   }

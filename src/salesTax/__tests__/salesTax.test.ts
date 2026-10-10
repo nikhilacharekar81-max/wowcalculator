@@ -177,5 +177,17 @@ export function runSalesTaxTests() {
   const allConfigs = getAllStateSalesTaxConfigs(2026);
   assert(allConfigs.length === 51, 'Case 8.1: All 51 jurisdictions (50 states + DC) configured');
 
+  // Test 9: Handling of missing/partial evidence for unrecognized state code
+  const res9 = calculateSalesTax({
+    amount: 100,
+    mode: 'add_tax',
+    stateRate: 6.00,
+    localRate: 0,
+    taxYear: 2026,
+    stateCode: 'ZZ' // Unrecognized
+  });
+  assert(res9.verificationStatus === 'PARTIALLY_VERIFIED', 'Case 9.1: Unrecognized state code is PARTIALLY_VERIFIED');
+  assert(res9.sourceInfo.name.includes('Fallback'), 'Case 9.2: Fallback source used for unrecognized state');
+
   console.log('--- ALL SALES TAX TESTS PASSED SUCCESSFULLY ---');
 }

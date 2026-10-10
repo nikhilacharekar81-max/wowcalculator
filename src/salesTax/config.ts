@@ -14,10 +14,20 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     digitalTaxable: true,
     shippingTaxable: true,
     sourcingRule: 'destination',
-    verificationStatus: 'VERIFIED',
+    verificationStatus: 'UNVERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.AL.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.AL.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.AL.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.AL.effectiveDate,
+    evidence: {
+      ruleId: 'AL-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Alabama Department of Revenue',
+      sourceUrl: 'https://revenue.alabama.gov/sales-use/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-AL-001']
+    }
   },
   AK: {
     code: 'AK',
@@ -31,10 +41,20 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     digitalTaxable: false,
     shippingTaxable: false,
     sourcingRule: 'destination',
-    verificationStatus: 'VERIFIED',
+    verificationStatus: 'UNVERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.AK.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.AK.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.AK.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.AK.effectiveDate,
+    evidence: {
+      ruleId: 'AK-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Alaska Department of Revenue',
+      sourceUrl: 'https://tax.alaska.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-AK-001']
+    }
   },
   AZ: {
     code: 'AZ',
@@ -51,7 +71,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.AZ.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.AZ.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.AZ.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.AZ.effectiveDate,
+    evidence: {
+      ruleId: 'AZ-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Arizona Department of Revenue',
+      sourceUrl: 'https://azdor.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-AZ-001']
+    }
   },
   AR: {
     code: 'AR',
@@ -68,7 +98,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.AR.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.AR.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.AR.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.AR.effectiveDate,
+    evidence: {
+      ruleId: 'AR-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Arkansas Department of Finance and Administration',
+      sourceUrl: 'https://www.dfa.arkansas.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-AR-001']
+    }
   },
   CA: {
     code: 'CA',
@@ -85,7 +125,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.CA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.CA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.CA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.CA.effectiveDate,
+    evidence: {
+      ruleId: 'CA-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'California Department of Tax and Fee Administration',
+      sourceUrl: 'https://www.cdtfa.ca.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-CA-001']
+    }
   },
   CO: {
     code: 'CO',
@@ -102,7 +152,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.CO.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.CO.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.CO.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.CO.effectiveDate,
+    evidence: {
+      ruleId: 'CO-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Colorado Department of Revenue',
+      sourceUrl: 'https://tax.colorado.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-CO-001']
+    }
   },
   CT: {
     code: 'CT',
@@ -120,7 +180,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.CT.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.CT.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.CT.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.CT.effectiveDate,
+    evidence: {
+      ruleId: 'CT-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Connecticut Department of Revenue Services',
+      sourceUrl: 'https://portal.ct.gov/DRS',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-CT-001']
+    }
   },
   DE: {
     code: 'DE',
@@ -137,7 +207,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.DE.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.DE.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.DE.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.DE.effectiveDate,
+    evidence: {
+      ruleId: 'DE-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Delaware Division of Revenue',
+      sourceUrl: 'https://revenue.delaware.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-DE-001']
+    }
   },
   DC: {
     code: 'DC',
@@ -154,7 +234,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.DC.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.DC.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.DC.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.DC.effectiveDate,
+    evidence: {
+      ruleId: 'DC-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'DC Office of Tax and Revenue',
+      sourceUrl: 'https://otr.cfo.dc.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-DC-001']
+    }
   },
   FL: {
     code: 'FL',
@@ -171,7 +261,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.FL.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.FL.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.FL.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.FL.effectiveDate,
+    evidence: {
+      ruleId: 'FL-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Florida Department of Revenue',
+      sourceUrl: 'https://floridarevenue.com/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-FL-001']
+    }
   },
   GA: {
     code: 'GA',
@@ -188,7 +288,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.GA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.GA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.GA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.GA.effectiveDate,
+    evidence: {
+      ruleId: 'GA-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Georgia Department of Revenue',
+      sourceUrl: 'https://dor.georgia.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-GA-001']
+    }
   },
   HI: {
     code: 'HI',
@@ -205,7 +315,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.HI.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.HI.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.HI.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.HI.effectiveDate,
+    evidence: {
+      ruleId: 'HI-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Hawaii Department of Taxation',
+      sourceUrl: 'https://tax.hawaii.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-HI-001']
+    }
   },
   ID: {
     code: 'ID',
@@ -222,7 +342,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.ID.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.ID.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.ID.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.ID.effectiveDate,
+    evidence: {
+      ruleId: 'ID-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Idaho State Tax Commission',
+      sourceUrl: 'https://tax.idaho.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-ID-001']
+    }
   },
   IL: {
     code: 'IL',
@@ -239,7 +369,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.IL.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.IL.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.IL.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.IL.effectiveDate,
+    evidence: {
+      ruleId: 'IL-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Illinois Department of Revenue',
+      sourceUrl: 'https://tax.illinois.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-IL-001']
+    }
   },
   IN: {
     code: 'IN',
@@ -256,7 +396,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.IN.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.IN.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.IN.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.IN.effectiveDate,
+    evidence: {
+      ruleId: 'IN-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Indiana Department of Revenue',
+      sourceUrl: 'https://www.in.gov/dor/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-IN-001']
+    }
   },
   IA: {
     code: 'IA',
@@ -273,7 +423,17 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.IA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.IA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.IA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.IA.effectiveDate,
+    evidence: {
+      ruleId: 'IA-2026-001',
+      category: 'General Sales Tax',
+      sourceAuthority: 'Iowa Department of Revenue',
+      sourceUrl: 'https://tax.iowa.gov/',
+      effectiveFrom: '2026-01-01',
+      lastCheckedDate: '2026-10-09',
+      verificationStatus: 'UNVERIFIED',
+      relatedTestIds: ['SALES-TAX-IA-001']
+    }
   },
   KS: {
     code: 'KS',
@@ -290,7 +450,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.KS.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.KS.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.KS.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.KS.effectiveDate,
+    evidence: { ruleId: 'KS-2026-001', category: 'General Sales Tax', sourceAuthority: 'Kansas Department of Revenue', sourceUrl: 'https://www.ksrevenue.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-KS-001'] }
   },
   KY: {
     code: 'KY',
@@ -307,7 +468,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.KY.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.KY.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.KY.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.KY.effectiveDate,
+    evidence: { ruleId: 'KY-2026-001', category: 'General Sales Tax', sourceAuthority: 'Kentucky Department of Revenue', sourceUrl: 'https://revenue.ky.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-KY-001'] }
   },
   LA: {
     code: 'LA',
@@ -324,7 +486,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.LA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.LA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.LA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.LA.effectiveDate,
+    evidence: { ruleId: 'LA-2026-001', category: 'General Sales Tax', sourceAuthority: 'Louisiana Department of Revenue', sourceUrl: 'https://revenue.louisiana.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-LA-001'] }
   },
   ME: {
     code: 'ME',
@@ -341,7 +504,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.ME.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.ME.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.ME.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.ME.effectiveDate,
+    evidence: { ruleId: 'ME-2026-001', category: 'General Sales Tax', sourceAuthority: 'Maine Revenue Services', sourceUrl: 'https://www.maine.gov/revenue/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-ME-001'] }
   },
   MD: {
     code: 'MD',
@@ -358,7 +522,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MD.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MD.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MD.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MD.effectiveDate,
+    evidence: { ruleId: 'MD-2026-001', category: 'General Sales Tax', sourceAuthority: 'Comptroller of Maryland', sourceUrl: 'https://www.marylandtaxes.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MD-001'] }
   },
   MA: {
     code: 'MA',
@@ -376,7 +541,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MA.effectiveDate,
+    evidence: { ruleId: 'MA-2026-001', category: 'General Sales Tax', sourceAuthority: 'Massachusetts Department of Revenue', sourceUrl: 'https://www.mass.gov/orgs/massachusetts-department-of-revenue', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MA-001'] }
   },
   MI: {
     code: 'MI',
@@ -393,7 +559,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MI.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MI.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MI.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MI.effectiveDate,
+    evidence: { ruleId: 'MI-2026-001', category: 'General Sales Tax', sourceAuthority: 'Michigan Department of Treasury', sourceUrl: 'https://www.michigan.gov/treasury', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MI-001'] }
   },
   MN: {
     code: 'MN',
@@ -410,7 +577,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MN.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MN.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MN.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MN.effectiveDate,
+    evidence: { ruleId: 'MN-2026-001', category: 'General Sales Tax', sourceAuthority: 'Minnesota Department of Revenue', sourceUrl: 'https://www.revenue.state.mn.us/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MN-001'] }
   },
   MS: {
     code: 'MS',
@@ -427,7 +595,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MS.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MS.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MS.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MS.effectiveDate,
+    evidence: { ruleId: 'MS-2026-001', category: 'General Sales Tax', sourceAuthority: 'Mississippi Department of Revenue', sourceUrl: 'https://www.dor.ms.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MS-001'] }
   },
   MO: {
     code: 'MO',
@@ -444,7 +613,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MO.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MO.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MO.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MO.effectiveDate,
+    evidence: { ruleId: 'MO-2026-001', category: 'General Sales Tax', sourceAuthority: 'Missouri Department of Revenue', sourceUrl: 'https://dor.mo.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MO-001'] }
   },
   MT: {
     code: 'MT',
@@ -461,7 +631,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.MT.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.MT.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.MT.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.MT.effectiveDate,
+    evidence: { ruleId: 'MT-2026-001', category: 'General Sales Tax', sourceAuthority: 'Montana Department of Revenue', sourceUrl: 'https://mtrevenue.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-MT-001'] }
   },
   NE: {
     code: 'NE',
@@ -478,7 +649,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NE.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NE.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NE.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NE.effectiveDate,
+    evidence: { ruleId: 'NE-2026-001', category: 'General Sales Tax', sourceAuthority: 'Nebraska Department of Revenue', sourceUrl: 'https://revenue.nebraska.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NE-001'] }
   },
   NV: {
     code: 'NV',
@@ -495,7 +667,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NV.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NV.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NV.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NV.effectiveDate,
+    evidence: { ruleId: 'NV-2026-001', category: 'General Sales Tax', sourceAuthority: 'Nevada Department of Taxation', sourceUrl: 'https://tax.nv.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NV-001'] }
   },
   NH: {
     code: 'NH',
@@ -512,7 +685,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NH.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NH.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NH.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NH.effectiveDate,
+    evidence: { ruleId: 'NH-2026-001', category: 'General Sales Tax', sourceAuthority: 'New Hampshire Department of Revenue Administration', sourceUrl: 'https://www.revenue.nh.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NH-001'] }
   },
   NJ: {
     code: 'NJ',
@@ -529,7 +703,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NJ.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NJ.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NJ.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NJ.effectiveDate,
+    evidence: { ruleId: 'NJ-2026-001', category: 'General Sales Tax', sourceAuthority: 'New Jersey Division of Taxation', sourceUrl: 'https://www.state.nj.us/treasury/taxation/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NJ-001'] }
   },
   NM: {
     code: 'NM',
@@ -546,7 +721,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NM.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NM.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NM.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NM.effectiveDate,
+    evidence: { ruleId: 'NM-2026-001', category: 'General Sales Tax', sourceAuthority: 'New Mexico Taxation and Revenue Department', sourceUrl: 'https://www.tax.newmexico.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NM-001'] }
   },
   NY: {
     code: 'NY',
@@ -564,7 +740,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NY.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NY.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NY.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NY.effectiveDate,
+    evidence: { ruleId: 'NY-2026-001', category: 'General Sales Tax', sourceAuthority: 'New York State Department of Taxation and Finance', sourceUrl: 'https://www.tax.ny.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NY-001'] }
   },
   NC: {
     code: 'NC',
@@ -581,7 +758,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.NC.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.NC.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.NC.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.NC.effectiveDate,
+    evidence: { ruleId: 'NC-2026-001', category: 'General Sales Tax', sourceAuthority: 'North Carolina Department of Revenue', sourceUrl: 'https://www.ncdor.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-NC-001'] }
   },
   ND: {
     code: 'ND',
@@ -598,7 +776,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.ND.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.ND.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.ND.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.ND.effectiveDate,
+    evidence: { ruleId: 'ND-2026-001', category: 'General Sales Tax', sourceAuthority: 'North Dakota Office of State Tax Commissioner', sourceUrl: 'https://www.tax.nd.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-ND-001'] }
   },
   OH: {
     code: 'OH',
@@ -615,7 +794,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.OH.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.OH.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.OH.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.OH.effectiveDate,
+    evidence: { ruleId: 'OH-2026-001', category: 'General Sales Tax', sourceAuthority: 'Ohio Department of Taxation', sourceUrl: 'https://tax.ohio.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-OH-001'] }
   },
   OK: {
     code: 'OK',
@@ -632,7 +812,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.OK.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.OK.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.OK.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.OK.effectiveDate,
+    evidence: { ruleId: 'OK-2026-001', category: 'General Sales Tax', sourceAuthority: 'Oklahoma Tax Commission', sourceUrl: 'https://oklahoma.gov/tax.html', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-OK-001'] }
   },
   OR: {
     code: 'OR',
@@ -649,7 +830,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.OR.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.OR.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.OR.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.OR.effectiveDate,
+    evidence: { ruleId: 'OR-2026-001', category: 'General Sales Tax', sourceAuthority: 'Oregon Department of Revenue', sourceUrl: 'https://www.oregon.gov/dor/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-OR-001'] }
   },
   PA: {
     code: 'PA',
@@ -666,7 +848,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.PA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.PA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.PA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.PA.effectiveDate,
+    evidence: { ruleId: 'PA-2026-001', category: 'General Sales Tax', sourceAuthority: 'Pennsylvania Department of Revenue', sourceUrl: 'https://www.revenue.pa.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-PA-001'] }
   },
   RI: {
     code: 'RI',
@@ -683,7 +866,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.RI.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.RI.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.RI.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.RI.effectiveDate,
+    evidence: { ruleId: 'RI-2026-001', category: 'General Sales Tax', sourceAuthority: 'Rhode Island Division of Taxation', sourceUrl: 'https://tax.ri.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-RI-001'] }
   },
   SC: {
     code: 'SC',
@@ -700,7 +884,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.SC.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.SC.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.SC.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.SC.effectiveDate,
+    evidence: { ruleId: 'SC-2026-001', category: 'General Sales Tax', sourceAuthority: 'South Carolina Department of Revenue', sourceUrl: 'https://dor.sc.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-SC-001'] }
   },
   SD: {
     code: 'SD',
@@ -717,7 +902,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.SD.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.SD.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.SD.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.SD.effectiveDate,
+    evidence: { ruleId: 'SD-2026-001', category: 'General Sales Tax', sourceAuthority: 'South Dakota Department of Revenue', sourceUrl: 'https://dor.sd.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-SD-001'] }
   },
   TN: {
     code: 'TN',
@@ -734,7 +920,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.TN.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.TN.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.TN.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.TN.effectiveDate,
+    evidence: { ruleId: 'TN-2026-001', category: 'General Sales Tax', sourceAuthority: 'Tennessee Department of Revenue', sourceUrl: 'https://www.tn.gov/revenue/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-TN-001'] }
   },
   TX: {
     code: 'TX',
@@ -751,7 +938,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.TX.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.TX.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.TX.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.TX.effectiveDate,
+    evidence: { ruleId: 'TX-2026-001', category: 'General Sales Tax', sourceAuthority: 'Texas Comptroller of Public Accounts', sourceUrl: 'https://comptroller.texas.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-TX-001'] }
   },
   UT: {
     code: 'UT',
@@ -768,7 +956,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.UT.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.UT.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.UT.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.UT.effectiveDate,
+    evidence: { ruleId: 'UT-2026-001', category: 'General Sales Tax', sourceAuthority: 'Utah State Tax Commission', sourceUrl: 'https://tax.utah.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-UT-001'] }
   },
   VT: {
     code: 'VT',
@@ -785,7 +974,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.VT.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.VT.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.VT.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.VT.effectiveDate,
+    evidence: { ruleId: 'VT-2026-001', category: 'General Sales Tax', sourceAuthority: 'Vermont Department of Taxes', sourceUrl: 'https://tax.vermont.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-VT-001'] }
   },
   VA: {
     code: 'VA',
@@ -802,7 +992,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.VA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.VA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.VA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.VA.effectiveDate,
+    evidence: { ruleId: 'VA-2026-001', category: 'General Sales Tax', sourceAuthority: 'Virginia Department of Taxation', sourceUrl: 'https://www.tax.virginia.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-VA-001'] }
   },
   WA: {
     code: 'WA',
@@ -819,7 +1010,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.WA.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.WA.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.WA.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.WA.effectiveDate,
+    evidence: { ruleId: 'WA-2026-001', category: 'General Sales Tax', sourceAuthority: 'Washington State Department of Revenue', sourceUrl: 'https://dor.wa.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-WA-001'] }
   },
   WV: {
     code: 'WV',
@@ -836,7 +1028,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.WV.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.WV.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.WV.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.WV.effectiveDate,
+    evidence: { ruleId: 'WV-2026-001', category: 'General Sales Tax', sourceAuthority: 'West Virginia State Tax Division', sourceUrl: 'https://tax.wv.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-WV-001'] }
   },
   WI: {
     code: 'WI',
@@ -853,7 +1046,8 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
     verificationStatus: 'VERIFIED',
     sourceName: SALES_TAX_SOURCES_2026.WI.sourceName,
     sourceUrl: SALES_TAX_SOURCES_2026.WI.sourceUrl,
-    effectiveDate: SALES_TAX_SOURCES_2026.WI.effectiveDate
+    effectiveDate: SALES_TAX_SOURCES_2026.WI.effectiveDate,
+    evidence: { ruleId: 'WI-2026-001', category: 'General Sales Tax', sourceAuthority: 'Wisconsin Department of Revenue', sourceUrl: 'https://www.revenue.wi.gov/', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: ['SALES-TAX-WI-001'] }
   },
   WY: {
     code: 'WY',
@@ -874,9 +1068,10 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
   }
 };
 
-export function getStateSalesTaxConfig(stateCode: string, taxYear: number = 2026): StateSalesTaxConfig {
-  if (taxYear !== 2026) {
-    throw new Error(`Unsupported tax year: ${taxYear}. WowCalc Sales Tax engine exclusively supports Tax Year 2026.`);
+export function getStateSalesTaxConfig(stateCode: string, transactionDate: string = '2026-01-01'): StateSalesTaxConfig {
+  const transactionYear = new Date(transactionDate).getFullYear();
+  if (transactionYear !== 2026) {
+    throw new Error(`Unsupported transaction date year: ${transactionYear}. WowCalc Sales Tax engine exclusively supports Tax Year 2026.`);
   }
   const code = (stateCode || 'CA').toUpperCase();
   const cfg = SALES_TAX_CONFIG_2026[code];
@@ -896,8 +1091,12 @@ export function getStateSalesTaxConfig(stateCode: string, taxYear: number = 2026
       verificationStatus: 'PARTIALLY_VERIFIED',
       sourceName: 'State Department of Revenue (Estimated / Fallback)',
       sourceUrl: 'https://www.taxadmin.org/',
-      effectiveDate: '2026-01-01'
+      effectiveDate: '2026-01-01',
+      evidence: { ruleId: 'N/A', category: 'N/A', sourceAuthority: 'N/A', sourceUrl: 'N/A', effectiveFrom: '2026-01-01', lastCheckedDate: '2026-10-09', verificationStatus: 'UNVERIFIED', relatedTestIds: [] }
     };
+  }
+  if (new Date(transactionDate) < new Date(cfg.evidence.effectiveFrom)) {
+    throw new Error(`Transaction date ${transactionDate} is before the effective date ${cfg.evidence.effectiveFrom} of the rule ${cfg.evidence.ruleId}.`);
   }
   return JSON.parse(JSON.stringify(cfg));
 }
