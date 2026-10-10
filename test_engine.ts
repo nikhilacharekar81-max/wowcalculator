@@ -564,6 +564,25 @@ console.log('--- 1. INCOME TAX CALCULATOR (5 Test Cases) ---');
     stateCode: 'IL'
   });
   assert(ilRes.stateDeduction === 2925, 'Case 1.21: Illinois personal exemption is $2,925 per 35 ILCS 5/204');
+
+  // Minnesota: 2026 Standard Deduction ($15,300 single / $30,600 MFJ)
+  const mnRes = getStateConfig('MN', 2026);
+  assert(mnRes.standardDeduction.single === 15300, 'Case 1.21: Minnesota 2026 single standard deduction is $15,300');
+  assert(mnRes.standardDeduction.mfj === 30600, 'Case 1.21: Minnesota 2026 MFJ standard deduction is $30,600');
+
+  // Oregon: 2026 Standard Deduction ($2,910 single / $5,820 MFJ)
+  const orRes = getStateConfig('OR', 2026);
+  assert(orRes.standardDeduction.single === 2910, 'Case 1.21: Oregon 2026 single standard deduction is $2,910');
+  assert(orRes.standardDeduction.mfj === 5820, 'Case 1.21: Oregon 2026 MFJ standard deduction is $5,820');
+
+  // New Jersey: Gross Income Tax personal exemptions ($1,000 single / $2,000 MFJ)
+  const njRes = getStateConfig('NJ', 2026);
+  assert(njRes.standardDeduction.single === 1000, 'Case 1.21: New Jersey 2026 single personal exemption is $1,000');
+  assert(njRes.standardDeduction.mfj === 2000, 'Case 1.21: New Jersey 2026 MFJ personal exemption is $2,000');
+
+  // Colorado: Flat tax rate explicitly anchored at 4.40%
+  const coRes = getStateConfig('CO', 2026);
+  assert(coRes.flatRate === 0.044, 'Case 1.21: Colorado 2026 flat tax rate is strictly 4.40%');
 }
 
 // Case 1.17: Unsupported state code banner and zero state tax
@@ -1525,6 +1544,10 @@ console.log('--- 9. PERSONAL LOAN CALCULATOR & TILA REG Z APR (2 Test Cases) ---
   const evalRes = evaluateExpression('3 + 4 * (2 - 1)');
   assert(evalRes === 7, 'Expression evaluator handles "3 + 4 * (2 - 1)" cleanly without eval()', `Got ${evalRes}`);
 }
+
+// Run dedicated sales tax tests
+import { runSalesTaxTests } from './src/salesTax/__tests__/salesTax.test.ts';
+runSalesTaxTests();
 
 console.log('');
 console.log('================================================================');
