@@ -74,10 +74,22 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
     exemptionNote = `General merchandise / prepared meals are fully taxable in ${stateCfg.name}.`;
   }
 
-  if (stateCfg.sourcingRule === 'origin') {
+  // Wayfair economic nexus & marketplace facilitator rules: remote sellers, interstate transactions, drop shipments, and multi-state sellers override origin sourcing to destination sourcing
+  const isRemoteOrMarketplace = Boolean(
+    input.isRemoteSeller ||
+    input.isMarketplaceFacilitator ||
+    input.isInterstate ||
+    input.isDropShipment ||
+    (input.sellerStateCode && input.buyerStateCode && input.sellerStateCode.trim().toUpperCase() !== input.buyerStateCode.trim().toUpperCase())
+  );
+  const effectiveSourcingRule = isRemoteOrMarketplace ? 'destination' : stateCfg.sourcingRule;
+
+  if (effectiveSourcingRule === 'origin') {
     exemptionNote += ' [Note: Sourcing rule is origin-based; tax determined by seller location.]';
   } else {
-    exemptionNote += ' [Note: Sourcing rule is destination-based; tax determined by delivery location.]';
+    exemptionNote += isRemoteOrMarketplace
+      ? ' [Note: Sourcing rule overridden to destination-based under Wayfair economic nexus, marketplace facilitator, or interstate commerce guidelines.]'
+      : ' [Note: Sourcing rule is destination-based; tax determined by delivery location.]';
   }
 
   const effectiveStateR = stateR * effectiveMultiplier;
@@ -154,9 +166,11 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
       taxable: true,
       ruleId: `${stateCode}-SOURCING-001`,
       sourceAuthority: stateCfg.evidence?.sourceAuthority || stateCfg.sourceName,
-      note: stateCfg.sourcingRule === 'origin'
+      note: effectiveSourcingRule === 'origin'
         ? `${stateCfg.name} enforces origin-based sourcing for intrastate transactions (tax determined by seller point of origin).`
-        : `${stateCfg.name} enforces destination-based sourcing (tax determined by buyer point of delivery).`
+        : isRemoteOrMarketplace
+          ? `${stateCfg.name} baseline origin sourcing is overridden to destination-based sourcing under South Dakota v. Wayfair economic nexus / marketplace facilitator rules.`
+          : `${stateCfg.name} enforces destination-based sourcing (tax determined by buyer point of delivery).`
     });
 
     const appliedRates: AppliedRateComponent[] = [
@@ -204,7 +218,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
       exemptionNote,
       itemType,
       stateCode,
-      sourcingRule: stateCfg.sourcingRule,
+      sourcingRule: effectiveSourcingRule,
       verificationStatus: effectiveVerificationStatus,
       sourceInfo: {
         name: stateCfg.sourceName,
@@ -218,7 +232,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         transactionDate,
         taxYear,
         jurisdiction: stateCode,
-        sourcingRule: stateCfg.sourcingRule,
+        sourcingRule: effectiveSourcingRule,
         appliedRates,
         taxabilityDecisions,
         roundingLog,
@@ -259,9 +273,11 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         taxable: true,
         ruleId: `${stateCode}-SOURCING-001`,
         sourceAuthority: stateCfg.evidence?.sourceAuthority || stateCfg.sourceName,
-        note: stateCfg.sourcingRule === 'origin'
+        note: effectiveSourcingRule === 'origin'
           ? `${stateCfg.name} enforces origin-based sourcing for intrastate transactions (tax determined by seller location).`
-          : `${stateCfg.name} enforces destination-based sourcing (tax determined by delivery destination).`
+          : isRemoteOrMarketplace
+            ? `${stateCfg.name} baseline origin sourcing is overridden to destination-based sourcing under South Dakota v. Wayfair economic nexus / marketplace facilitator rules.`
+            : `${stateCfg.name} enforces destination-based sourcing (tax determined by buyer point of delivery).`
       }
     ];
 
@@ -299,7 +315,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
       exemptionNote,
       itemType,
       stateCode,
-      sourcingRule: stateCfg.sourcingRule,
+      sourcingRule: effectiveSourcingRule,
       verificationStatus: effectiveVerificationStatus,
       sourceInfo: {
         name: stateCfg.sourceName,
@@ -313,7 +329,7 @@ export function calculateSalesTax(input: SalesTaxInput): SalesTaxResult {
         transactionDate,
         taxYear,
         jurisdiction: stateCode,
-        sourcingRule: stateCfg.sourcingRule,
+        sourcingRule: effectiveSourcingRule,
         appliedRates,
         taxabilityDecisions,
         roundingLog,

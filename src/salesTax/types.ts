@@ -66,6 +66,12 @@ export interface SalesTaxInput {
   shippingAmount?: number;
   taxYear: number;
   transactionDate?: string;
+  isRemoteSeller?: boolean;
+  isMarketplaceFacilitator?: boolean;
+  isInterstate?: boolean;
+  isDropShipment?: boolean;
+  sellerStateCode?: string;
+  buyerStateCode?: string;
 }
 
 export interface SalesTaxResult {

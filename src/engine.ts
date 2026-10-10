@@ -255,7 +255,7 @@ export function calculateFicaTax(
   const baseMedicare = roundToCents(ficaTaxableWages * medRate);
 
   // Additional Medicare Tax (0.9% surtax over statutory threshold)
-  const addThreshold = yearConfig.medicare.additionalThreshold[filingStatus]?.value || 200000;
+  const addThreshold = yearConfig.medicare.additionalThreshold[filingStatus]?.value || (filingStatus === 'mfj' ? 250000 : filingStatus === 'mfs' ? 125000 : 200000);
   const addRate = yearConfig.medicare.additionalTaxRate.value; // 0.9%
   const surtaxWages = Math.max(0, ficaTaxableWages - addThreshold);
   const additionalMedicare = roundToCents(surtaxWages * addRate);
@@ -293,6 +293,7 @@ export interface ComprehensiveTaxInput {
   tipIncome?: number;
   overtimeIncome?: number;
   saltPaid?: number;
+  selfEmploymentIncome?: number;
 }
 
 export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
@@ -317,9 +318,30 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
   }
 
   const grossSalary = Math.max(0, input.annualIncome);
+  const selfEmploymentIncome = Math.max(0, input.selfEmploymentIncome || 0);
   const preTax401k = Math.max(0, input.preTax401k || 0);
   const preTaxHsaFsa = Math.max(0, input.preTaxHsaFsa || 0);
   const totalPreTax = preTax401k + preTaxHsaFsa;
+
+  // FICA calculation for W-2 wages
+  const ficaRes = calculateFicaTax(grossSalary, preTaxHsaFsa, filingStatus, year);
+  const ficaTax = ficaRes.totalFica;
+
+  // SECA Tax Calculation (Schedule SE / IRC § 1402 & § 164(f))
+  let secaTax = 0;
+  let sec164fDeduction = 0;
+  let seNetEarnings = 0;
+  if (selfEmploymentIncome > 0) {
+    seNetEarnings = roundToCents(selfEmploymentIncome * 0.9235);
+    const ssCap = yearConfig.socialSecurity.wageBaseCap.value;
+    const seSsTax = roundToCents(Math.min(seNetEarnings, ssCap) * 0.124); // 12.4% SE OASDI
+    const seMedTax = roundToCents(seNetEarnings * 0.029); // 2.9% SE Medicare
+    const addThreshold = yearConfig.medicare.additionalThreshold[filingStatus]?.value || (filingStatus === 'mfj' ? 250000 : filingStatus === 'mfs' ? 125000 : 200000);
+    const combinedWagesAndSe = ficaRes.ficaTaxableWages + seNetEarnings;
+    const seAddMed = roundToCents(Math.max(0, combinedWagesAndSe - addThreshold) * 0.009);
+    secaTax = roundToCents(seSsTax + seMedTax + seAddMed);
+    sec164fDeduction = roundToCents(secaTax * 0.5); // IRC § 164(f) deductible half of self-employment tax
+  }
 
   // New 2026 Provisions
   const saltCap = yearConfig.taxProvisions?.saltCap?.value || 40000;
@@ -341,8 +363,11 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
         ? input.itemizedDeductions + saltDeduction
         : standardDeduction);
 
-  // Federal Taxable Income = Gross - Pre-Tax Contributions - Federal Deduction - Senior/Tip/Overtime Deductions
-  const federalTaxableIncome = Math.max(0, grossSalary - totalPreTax - effectiveFederalDeduction - seniorDeduction - tipOvertimeDeduction);
+  // Adjusted Gross Income (AGI) incorporates gross salary + SE income - pre-tax - IRC § 164(f) deduction
+  const adjustedGrossIncome = Math.max(0, grossSalary + selfEmploymentIncome - totalPreTax - sec164fDeduction);
+
+  // Federal Taxable Income = AGI - Federal Deduction - Senior/Tip/Overtime Deductions
+  const federalTaxableIncome = Math.max(0, adjustedGrossIncome - effectiveFederalDeduction - seniorDeduction - tipOvertimeDeduction);
 
   // 2. Federal Income Tax using 2026 IRS Withholding Method (Brackets)
   const federalBrackets = yearConfig.brackets[filingStatus].value;
@@ -360,10 +385,6 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     if (rem <= 0) break;
   }
   federalTax = roundToCents(federalTax);
-
-  // 3. FICA Taxes (Social Security & Medicare)
-  const ficaRes = calculateFicaTax(grossSalary, preTaxHsaFsa, filingStatus, year);
-  const ficaTax = ficaRes.totalFica;
 
   // 4. State Income Tax
   let stateTax = 0;
@@ -416,8 +437,8 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
   }
 
   // 5. Total Taxes & Liquid Take-Home Pay
-  const totalTax = roundToCents(federalTax + ficaTax + stateTax);
-  const netTakeHome = Math.max(0, roundToCents(grossSalary - totalTax - totalPreTax));
+  const totalTax = roundToCents(federalTax + ficaTax + stateTax + secaTax);
+  const netTakeHome = Math.max(0, roundToCents(grossSalary + selfEmploymentIncome - totalTax - totalPreTax));
 
   return {
     year,
@@ -425,25 +446,30 @@ export function calculateComprehensiveTax(input: ComprehensiveTaxInput) {
     stateCode,
     stateName: stateConfig.stateName,
     grossSalary,
+    selfEmploymentIncome,
+    adjustedGrossIncome,
+    seNetEarnings,
+    secaTax,
+    sec164fDeduction,
     preTax401k,
     preTaxHsaFsa,
     totalPreTax,
     federalStandardDeduction: standardDeduction,
     federalTaxableIncome,
     federalTax,
-    federalEffectiveRate: grossSalary > 0 ? (federalTax / grossSalary) * 100 : 0,
+    federalEffectiveRate: (grossSalary + selfEmploymentIncome) > 0 ? (federalTax / (grossSalary + selfEmploymentIncome)) * 100 : 0,
     ficaTax,
     ficaDetails: ficaRes,
     stateDeduction,
     stateTaxableIncome,
     stateTax,
-    stateEffectiveRate: grossSalary > 0 ? (stateTax / grossSalary) * 100 : 0,
+    stateEffectiveRate: (grossSalary + selfEmploymentIncome) > 0 ? (stateTax / (grossSalary + selfEmploymentIncome)) * 100 : 0,
     totalTax,
-    totalEffectiveTaxRate: grossSalary > 0 ? (totalTax / grossSalary) * 100 : 0,
+    totalEffectiveTaxRate: (grossSalary + selfEmploymentIncome) > 0 ? (totalTax / (grossSalary + selfEmploymentIncome)) * 100 : 0,
     netTakeHome,
     // Clearly labeled Annual vs Paycheck/Period estimates
     annual: {
-      gross: grossSalary,
+      gross: grossSalary + selfEmploymentIncome,
       totalTax,
       netTakeHome,
       preTax: totalPreTax
@@ -655,6 +681,13 @@ export interface AutoLoanInput {
   titleFees: number;
   dealerDocFee: number;
   docFeeIsFinancingOnly?: boolean; // TILA Reg Z: fee is charged only to financing customers (default false)
+  otherPrepaidFees?: number; // Upfront administrative / documentation / registration fees financed or prepaid
+  adminFee?: number; // Optional upfront admin fee
+  documentationFee?: number; // Optional upfront documentation fee
+  administrativeFee?: number; // Optional upfront administrative fee
+  processingFee?: number; // Optional processing fee
+  registrationFee?: number; // Optional registration fee
+  upfrontFees?: number; // Optional upfront fees
   manufacturerRebate?: number; // Optional manufacturer rebate $
   rebateIsTaxable?: boolean; // Toggle: taxable rebate (applied after tax) vs non-taxable rebate (reduces tax base)
   annualRate: number;
@@ -705,7 +738,13 @@ export function calculateAutoLoan(input: AutoLoanInput) {
   // 4. Fees
   const titleFees = Math.max(0, input.titleFees || 0);
   const docFee = Math.max(0, input.dealerDocFee || 0);
-  const totalFees = roundToCents(titleFees + docFee);
+  const adminFee = Math.max(0, input.adminFee || input.administrativeFee || 0);
+  const docFeeParam = Math.max(0, input.documentationFee || 0);
+  const processingFee = Math.max(0, input.processingFee || 0);
+  const regFee = Math.max(0, input.registrationFee || 0);
+  const upfrontFees = Math.max(0, input.upfrontFees || 0);
+  const otherFees = Math.max(0, (input.otherPrepaidFees || 0) + adminFee + docFeeParam + processingFee + regFee + upfrontFees);
+  const totalFees = roundToCents(titleFees + docFee + otherFees);
 
   // Down Payment
   const down = Math.min(price + salesTax + totalFees, Math.max(0, input.downPayment || 0));
@@ -777,20 +816,20 @@ export function calculateAutoLoan(input: AutoLoanInput) {
   const totalVehicleCost = roundToCents(down + tradeInNetEquity + totalPayments);
 
   // 7. Regulation Z Actuarial APR:
-  // Under Reg Z § 1026.4, documentation fees charged to cash buyers too are NOT finance charges.
+  // Under Reg Z § 1026.4, documentation and administrative fees charged to cash buyers too are NOT finance charges.
   // Only fees charged strictly to financing customers count as prepaid finance charges.
   const docFeeIsFinancingOnly = Boolean(input.docFeeIsFinancingOnly);
-  const prepaidFinanceCharges = docFeeIsFinancingOnly ? docFee : 0;
+  const prepaidFinanceCharges = roundToCents((docFeeIsFinancingOnly ? docFee : 0) + otherFees);
   const amountFinancedForApr = Math.max(0, roundToCents(totalFinanced - prepaidFinanceCharges));
 
   let regulationZApr: number;
   let aprLabel: string;
   if (prepaidFinanceCharges === 0 || totalFinanced === 0) {
     regulationZApr = input.annualRate;
-    aprLabel = `${regulationZApr.toFixed(2)}% APR (Equals note rate - doc fee payable in cash transactions too)`;
+    aprLabel = `${regulationZApr.toFixed(2)}% APR (Equals note rate - fees payable in cash transactions too)`;
   } else {
     regulationZApr = solveRegulationZ_Apr(amountFinancedForApr, monthlyPayment, n);
-    aprLabel = `${regulationZApr.toFixed(3)}% APR (Includes financing-only doc fee under Reg Z)`;
+    aprLabel = `${regulationZApr.toFixed(3)}% APR (Includes financing-only fees under Reg Z)`;
   }
 
   return {
@@ -2290,7 +2329,18 @@ export function calculateRetirement(input: {
 
   while (balance < targetNetWorth && months < 1200) {
     months++;
-    balance += (balance * monthlyRate) + totalMonthlyContribution;
+    const yearsElapsed = Math.floor(months / 12);
+    const inflationFactor = Math.pow(1 + inflation / 100, yearsElapsed);
+    const currentMax401k = max401k * inflationFactor;
+    const currentMaxIra = maxIra * inflationFactor;
+    const currentMaxHsa = maxHsa * inflationFactor;
+
+    const currentCont401k = Math.min(currentMax401k, input.monthlyContribution401k * inflationFactor);
+    const currentContIra = Math.min(currentMaxIra, input.monthlyContributionIra * inflationFactor);
+    const currentContHsa = Math.min(currentMaxHsa, input.monthlyContributionHsa * inflationFactor);
+    const currentMonthlyContribution = currentCont401k + currentContIra + currentContHsa;
+
+    balance += (balance * monthlyRate) + currentMonthlyContribution;
     
     if (months % 12 === 0) {
       timeline.push({
