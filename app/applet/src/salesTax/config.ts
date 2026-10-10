@@ -533,10 +533,10 @@ export const SALES_TAX_CONFIG_2026: Record<string, StateSalesTaxConfig> = {
   },
   NM: {
     code: 'NM',
-    name: 'New Mexico',
-    stateRate: 5.125,
+    name: 'New Mexico Gross Receipts Tax',
+    stateRate: 4.875,
     avgLocalRate: 2.70,
-    combinedRate: 7.825,
+    combinedRate: 7.575,
     foodTaxable: true,
     clothingTaxable: true,
     prescriptionTaxable: false,
